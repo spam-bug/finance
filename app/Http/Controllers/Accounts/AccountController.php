@@ -19,13 +19,11 @@ class AccountController extends Controller
 {
     public function index(): Response
     {
-        $accounts = auth()->user()
-            ->accounts()
-            ->orderBy('name')
-            ->get();
+        $user = auth()->user();
 
         return Inertia::render('accounts/index', [
-            'accounts' => $accounts,
+            'accounts' => $user->accounts()->orderBy('name')->get(),
+            'categories' => $user->categories()->with('parent')->orderBy('name')->get(),
         ]);
     }
 

@@ -3,6 +3,7 @@
 namespace App\Jobs\Savings;
 
 use App\Data\Savings\CreateSavingsGoalData;
+use App\Events\Savings\SavingsGoalCreated;
 use App\Models\SavingsGoal;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,7 +19,11 @@ class CreateSavingsGoal implements ShouldQueue
 
     public function handle(DatabaseManager $database): void
     {
-        $database->transaction(fn () => SavingsGoal::query()->create([...$this->data->toArray(), 'user_id' => $this->user->id]));
+        $savingsGoal = $database->transaction(
+            fn () => SavingsGoal::query()->create([...$this->data->toArray(), 'user_id' => $this->user->id])
+        );
+
+        broadcast(new SavingsGoalCreated(user: $this->user, savingsGoal: $savingsGoal));
     }
 
     public function failed(\Throwable $exception): void

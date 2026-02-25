@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Budgets;
 
+use App\Events\Budgets\BudgetDeleted;
 use App\Models\Budget;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,7 +18,11 @@ class DeleteBudget implements ShouldQueue
 
     public function handle(DatabaseManager $database): void
     {
+        $budgetId = $this->budget->id;
+
         $database->transaction(fn () => $this->budget->delete());
+
+        broadcast(new BudgetDeleted(user: $this->user, budgetId: $budgetId));
     }
 
     public function failed(\Throwable $exception): void

@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Goals;
 
+use App\Events\Goals\GoalDeleted;
 use App\Models\Goal;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,7 +18,11 @@ class DeleteGoal implements ShouldQueue
 
     public function handle(DatabaseManager $database): void
     {
+        $goalId = $this->goal->id;
+
         $database->transaction(fn () => $this->goal->delete());
+
+        broadcast(new GoalDeleted(user: $this->user, goalId: $goalId));
     }
 
     public function failed(\Throwable $exception): void

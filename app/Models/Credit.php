@@ -25,6 +25,7 @@ class Credit extends Model
         'amount_per_payment',
         'start_date',
         'notes',
+        'is_indefinite',
     ];
 
     /**
@@ -37,6 +38,7 @@ class Credit extends Model
             'total_amount' => 'decimal:2',
             'amount_per_payment' => 'decimal:2',
             'start_date' => 'date',
+            'is_indefinite' => 'boolean',
         ];
     }
 
@@ -52,8 +54,36 @@ class Credit extends Model
 
     public function remainingBalance(): float
     {
+        if ($this->is_indefinite) {
+            $paidAmount = $this->payments()->whereNotNull('paid_at')->sum('amount');
+
+            return (float) $paidAmount;
+        }
+
         $paidAmount = $this->payments()->whereNotNull('paid_at')->sum('amount');
 
         return (float) $this->total_amount - $paidAmount;
+    }
+
+    public function generateNextPayment(): void
+    {
+        $lastPayment = $this->payments()->orderByDesc('due_date')->first();
+
+        if (! $lastPayment) {
+            return;
+        }
+
+        $nextDate = $lastPayment->due_date->copy();
+
+        if ($this->payment_frequency === CreditPaymentFrequency::Monthly) {
+            $nextDate->addMonth();
+        } else {
+            $nextDate->addMonths(3);
+        }
+
+        $this->payments()->create([
+            'amount' => $this->amount_per_payment,
+            'due_date' => $nextDate->toDateString(),
+        ]);
     }
 }

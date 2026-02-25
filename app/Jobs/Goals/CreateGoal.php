@@ -3,6 +3,7 @@
 namespace App\Jobs\Goals;
 
 use App\Data\Goals\CreateGoalData;
+use App\Events\Goals\GoalCreated;
 use App\Models\Goal;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,7 +19,11 @@ class CreateGoal implements ShouldQueue
 
     public function handle(DatabaseManager $database): void
     {
-        $database->transaction(fn () => Goal::query()->create([...$this->data->toArray(), 'user_id' => $this->user->id]));
+        $goal = $database->transaction(
+            fn () => Goal::query()->create([...$this->data->toArray(), 'user_id' => $this->user->id])
+        );
+
+        broadcast(new GoalCreated(user: $this->user, goal: $goal));
     }
 
     public function failed(\Throwable $exception): void

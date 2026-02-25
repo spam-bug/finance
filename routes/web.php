@@ -5,10 +5,12 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Budgets\BudgetController;
+use App\Http\Controllers\Categories\CategoryController;
 use App\Http\Controllers\Credits\CreditController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Goals\GoalController;
 use App\Http\Controllers\Investments\InvestmentController;
+use App\Http\Controllers\Invitations\InvitationController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Savings\SavingsGoalController;
 use App\Http\Controllers\Transactions\TransactionController;
@@ -24,6 +26,10 @@ Route::middleware('guest')->group(function (): void {
 
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
     Route::post('reset-password', [NewPasswordController::class, 'store'])->name('password.store');
+
+    // Accept invitation
+    Route::get('register/{token}', [InvitationController::class, 'showAccept'])->name('invitations.accept.show');
+    Route::post('register/{token}', [InvitationController::class, 'accept'])->name('invitations.accept');
 });
 
 // Authenticated routes
@@ -61,4 +67,12 @@ Route::middleware('auth')->group(function (): void {
 
     // Goals
     Route::resource('goals', GoalController::class)->except(['create', 'edit', 'show']);
+
+    // Categories
+    Route::resource('categories', CategoryController::class)->except(['create', 'edit', 'show']);
+
+    // Invitations
+    Route::get('invitations', [InvitationController::class, 'index'])->name('invitations.index');
+    Route::post('invitations', [InvitationController::class, 'store'])->name('invitations.store');
+    Route::delete('invitations/{invitation}', [InvitationController::class, 'destroy'])->name('invitations.destroy');
 });

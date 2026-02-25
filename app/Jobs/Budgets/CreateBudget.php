@@ -3,6 +3,7 @@
 namespace App\Jobs\Budgets;
 
 use App\Data\Budgets\CreateBudgetData;
+use App\Events\Budgets\BudgetCreated;
 use App\Models\Budget;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,10 +19,14 @@ class CreateBudget implements ShouldQueue
 
     public function handle(DatabaseManager $database): void
     {
-        $database->transaction(fn () => Budget::query()->updateOrCreate(
-            ['user_id' => $this->user->id, 'category_id' => $this->data->category_id, 'month' => $this->data->month, 'year' => $this->data->year],
-            ['amount' => $this->data->amount]
-        ));
+        $budget = $database->transaction(
+            fn () => Budget::query()->updateOrCreate(
+                ['user_id' => $this->user->id, 'category_id' => $this->data->category_id, 'month' => $this->data->month, 'year' => $this->data->year],
+                ['amount' => $this->data->amount]
+            )
+        );
+
+        broadcast(new BudgetCreated(user: $this->user, budget: $budget));
     }
 
     public function failed(\Throwable $exception): void

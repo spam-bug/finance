@@ -3,6 +3,7 @@
 namespace App\Jobs\Investments;
 
 use App\Data\Investments\CreateInvestmentData;
+use App\Events\Investments\InvestmentCreated;
 use App\Models\Investment;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,7 +19,11 @@ class CreateInvestment implements ShouldQueue
 
     public function handle(DatabaseManager $database): void
     {
-        $database->transaction(fn () => Investment::query()->create([...$this->data->toArray(), 'user_id' => $this->user->id]));
+        $investment = $database->transaction(
+            fn () => Investment::query()->create([...$this->data->toArray(), 'user_id' => $this->user->id])
+        );
+
+        broadcast(new InvestmentCreated(user: $this->user, investment: $investment));
     }
 
     public function failed(\Throwable $exception): void

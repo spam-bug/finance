@@ -3,6 +3,7 @@
 namespace App\Jobs\Investments;
 
 use App\Data\Investments\AddInvestmentUpdateData;
+use App\Events\Investments\InvestmentUpdated;
 use App\Models\Investment;
 use App\Models\InvestmentUpdate;
 use App\Models\User;
@@ -23,6 +24,8 @@ class AddInvestmentUpdate implements ShouldQueue
             InvestmentUpdate::query()->create([...$this->data->toArray(), 'investment_id' => $this->investment->id]);
             $this->investment->update(['current_value' => $this->data->value]);
         });
+
+        broadcast(new InvestmentUpdated(user: $this->user, investment: $this->investment->fresh()));
     }
 
     public function failed(\Throwable $exception): void

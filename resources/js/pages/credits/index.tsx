@@ -1,33 +1,34 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useEcho } from '@laravel/echo-react';
 import AppLayout from '@/layouts/app-layout';
 import { type Account, type Credit, type CreditPayment } from '@/types';
-import { router, useForm } from '@inertiajs/react';
-import { CheckCircle2, CreditCardIcon, MoreHorizontal, PlusIcon } from 'lucide-react';
+import { router, useForm, usePage } from '@inertiajs/react';
+import { CheckCircle2, CreditCardIcon, InfinityIcon, MoreHorizontal, PlusIcon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 
-type Props = {
-    credits: Credit[];
-    accounts: Account[];
-};
+type Props = { credits: Credit[]; accounts: Account[] };
 
 function formatCurrency(amount: string | number): string {
     return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(amount));
 }
 
 function formatDate(date: string): string {
-    return new Date(date + 'T00:00:00').toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+    return new Date(date.split('T')[0] + 'T00:00:00').toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function CreditForm({ onClose }: { onClose: () => void }) {
     const form = useForm({
         name: '',
+        is_indefinite: false,
         total_amount: '',
         payment_frequency: 'monthly',
         number_of_payments: '12',
@@ -36,9 +37,27 @@ function CreditForm({ onClose }: { onClose: () => void }) {
         notes: '',
     });
 
+    const computedPerPayment = !form.data.is_indefinite && form.data.total_amount && form.data.number_of_payments
+        ? Number(form.data.total_amount) / Number(form.data.number_of_payments)
+        : null;
+
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        form.post('/credits', { onSuccess: onClose });
+        const payload: Record<string, unknown> = {
+            name: form.data.name,
+            is_indefinite: form.data.is_indefinite,
+            payment_frequency: form.data.payment_frequency,
+            start_date: form.data.start_date,
+            notes: form.data.notes,
+        };
+        if (form.data.is_indefinite) {
+            payload.amount_per_payment = form.data.amount_per_payment;
+        } else {
+            payload.total_amount = form.data.total_amount;
+            payload.number_of_payments = form.data.number_of_payments;
+            payload.amount_per_payment = computedPerPayment ?? form.data.amount_per_payment;
+        }
+        router.post('/credits', payload, { onSuccess: onClose });
     }
 
     return (
@@ -49,18 +68,42 @@ function CreditForm({ onClose }: { onClose: () => void }) {
                 {form.errors.name && <p className="text-destructive text-sm">{form.errors.name}</p>}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center gap-2">
+                <input
+                    id="is_indefinite"
+                    type="checkbox"
+                    checked={form.data.is_indefinite}
+                    onChange={(e) => form.setData('is_indefinite', e.target.checked)}
+                    className="h-4 w-4 rounded border"
+                />
+                <Label htmlFor="is_indefinite">Indefinite (ongoing, no fixed end)</Label>
+            </div>
+
+            {form.data.is_indefinite ? (
                 <div className="space-y-2">
-                    <Label htmlFor="total_amount">Total Amount</Label>
-                    <Input id="total_amount" type="number" min="0.01" step="0.01" value={form.data.total_amount} onChange={(e) => form.setData('total_amount', e.target.value)} />
-                    {form.errors.total_amount && <p className="text-destructive text-sm">{form.errors.total_amount}</p>}
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="amount_per_payment">Per Payment</Label>
-                    <Input id="amount_per_payment" type="number" min="0.01" step="0.01" value={form.data.amount_per_payment} onChange={(e) => form.setData('amount_per_payment', e.target.value)} />
+                    <Label htmlFor="amount_per_payment">Amount per Payment</Label>
+                    <CurrencyInput id="amount_per_payment" min="0.01" step="0.01" value={form.data.amount_per_payment} onChange={(e) => form.setData('amount_per_payment', e.target.value)} />
                     {form.errors.amount_per_payment && <p className="text-destructive text-sm">{form.errors.amount_per_payment}</p>}
                 </div>
-            </div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="total_amount">Total Amount</Label>
+                            <CurrencyInput id="total_amount" min="0.01" step="0.01" value={form.data.total_amount} onChange={(e) => form.setData('total_amount', e.target.value)} />
+                            {form.errors.total_amount && <p className="text-destructive text-sm">{form.errors.total_amount}</p>}
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="number_of_payments">Number of Payments</Label>
+                            <Input id="number_of_payments" type="number" min="1" max="360" value={form.data.number_of_payments} onChange={(e) => form.setData('number_of_payments', e.target.value)} />
+                            {form.errors.number_of_payments && <p className="text-destructive text-sm">{form.errors.number_of_payments}</p>}
+                        </div>
+                    </div>
+                    {computedPerPayment !== null && (
+                        <p className="text-muted-foreground text-sm">Per payment: <strong>{formatCurrency(computedPerPayment)}</strong></p>
+                    )}
+                </>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -74,15 +117,9 @@ function CreditForm({ onClose }: { onClose: () => void }) {
                     </Select>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="number_of_payments">Number of Payments</Label>
-                    <Input id="number_of_payments" type="number" min="1" max="360" value={form.data.number_of_payments} onChange={(e) => form.setData('number_of_payments', e.target.value)} />
-                    {form.errors.number_of_payments && <p className="text-destructive text-sm">{form.errors.number_of_payments}</p>}
+                    <Label htmlFor="start_date">Start Date</Label>
+                    <Input id="start_date" type="date" value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} />
                 </div>
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="start_date">Start Date</Label>
-                <Input id="start_date" type="date" value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} />
             </div>
 
             <div className="space-y-2">
@@ -104,9 +141,7 @@ function PaymentRow({ payment, accounts }: { payment: CreditPayment; accounts: A
 
     function handlePay(e: React.FormEvent) {
         e.preventDefault();
-        router.post(`/credit-payments/${payment.id}/pay`, { account_id: Number(form.data.account_id) }, {
-            onSuccess: () => setIsPaying(false),
-        });
+        router.post(`/credit-payments/${payment.id}/pay`, { account_id: Number(form.data.account_id) }, { onSuccess: () => setIsPaying(false) });
     }
 
     if (payment.paid_at) {
@@ -145,21 +180,23 @@ function PaymentRow({ payment, accounts }: { payment: CreditPayment; accounts: A
     );
 }
 
-function CreditCard({ credit, accounts, onDelete }: { credit: Credit; accounts: Account[]; onDelete: () => void }) {
+function CreditCard({ credit, accounts, onDelete }: { credit: Credit & { is_indefinite?: boolean }; accounts: Account[]; onDelete: () => void }) {
     const [expanded, setExpanded] = useState(false);
     const payments = credit.payments ?? [];
     const paidCount = payments.filter((p) => p.paid_at).length;
-    const progress = payments.length > 0 ? (paidCount / payments.length) * 100 : 0;
-
     const paidAmount = payments.filter((p) => p.paid_at).reduce((sum, p) => sum + Number(p.amount), 0);
-    const remaining = Number(credit.total_amount) - paidAmount;
+    const progress = payments.length > 0 ? (paidCount / payments.length) * 100 : 0;
+    const remaining = credit.is_indefinite ? null : Number(credit.total_amount) - paidAmount;
 
     return (
         <Card>
             <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                 <div>
-                    <CardTitle className="text-base">{credit.name}</CardTitle>
-                    <p className="text-muted-foreground text-sm capitalize">{credit.payment_frequency} · {payments.length} payments</p>
+                    <div className="flex items-center gap-2">
+                        <CardTitle className="text-base">{credit.name}</CardTitle>
+                        {credit.is_indefinite && <Badge variant="secondary" className="flex items-center gap-1"><InfinityIcon className="h-3 w-3" />Indefinite</Badge>}
+                    </div>
+                    <p className="text-muted-foreground text-sm capitalize">{credit.payment_frequency} · {credit.is_indefinite ? `${paidCount} paid` : `${payments.length} payments`}</p>
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -171,14 +208,23 @@ function CreditCard({ credit, accounts, onDelete }: { credit: Credit; accounts: 
                 </DropdownMenu>
             </CardHeader>
             <CardContent className="space-y-3">
-                <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Remaining</span>
-                    <span className="font-semibold">{formatCurrency(remaining)}</span>
-                </div>
-                <div className="h-1.5 w-full rounded-full bg-muted">
-                    <div className="h-1.5 rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
-                </div>
-                <p className="text-muted-foreground text-xs">{paidCount} of {payments.length} paid</p>
+                {credit.is_indefinite ? (
+                    <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Total Paid</span>
+                        <span className="font-semibold">{formatCurrency(paidAmount)}</span>
+                    </div>
+                ) : (
+                    <>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Remaining</span>
+                            <span className="font-semibold">{formatCurrency(remaining ?? 0)}</span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-muted">
+                            <div className="h-1.5 rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+                        </div>
+                        <p className="text-muted-foreground text-xs">{paidCount} of {payments.length} paid</p>
+                    </>
+                )}
 
                 <Button variant="ghost" size="sm" className="w-full" onClick={() => setExpanded(!expanded)}>
                     {expanded ? 'Hide payments' : 'View payment schedule'}
@@ -197,7 +243,10 @@ function CreditCard({ credit, accounts, onDelete }: { credit: Credit; accounts: 
 }
 
 export default function CreditsIndex({ credits, accounts }: Props) {
+    const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+    useEcho(`credits.${auth.user.id}`, ['.credits.created', '.credits.deleted', '.credits.payment-paid'], () => router.reload({ only: ['credits'] }));
 
     function handleDelete(credit: Credit) {
         if (!confirm(`Delete "${credit.name}"?`)) return;

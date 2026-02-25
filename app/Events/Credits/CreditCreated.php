@@ -25,7 +25,12 @@ class CreditCreated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('App.Models.User.' . $this->user->id),
+            new PrivateChannel('credits.'.$this->user->id),
         ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'credits.created';
     }
 }

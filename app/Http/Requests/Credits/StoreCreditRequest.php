@@ -18,14 +18,17 @@ class StoreCreditRequest extends FormRequest
      */
     public function rules(): array
     {
+        $isIndefinite = $this->boolean('is_indefinite');
+
         return [
             'name' => ['required', 'string', 'max:255'],
-            'total_amount' => ['required', 'numeric', 'min:0.01'],
+            'is_indefinite' => ['boolean'],
             'payment_frequency' => ['required', Rule::enum(CreditPaymentFrequency::class)],
-            'number_of_payments' => ['required', 'integer', 'min:1', 'max:360'],
             'amount_per_payment' => ['required', 'numeric', 'min:0.01'],
             'start_date' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'total_amount' => [$isIndefinite ? 'nullable' : 'required', 'numeric', 'min:0.01'],
+            'number_of_payments' => [$isIndefinite ? 'nullable' : 'required', 'integer', 'min:1', 'max:360'],
         ];
     }
 }

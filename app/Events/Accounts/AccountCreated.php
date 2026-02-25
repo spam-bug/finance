@@ -25,7 +25,12 @@ class AccountCreated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('App.Models.User.' . $this->user->id),
+            new PrivateChannel('accounts.'.$this->user->id),
         ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'accounts.created';
     }
 }

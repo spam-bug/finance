@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useEcho } from '@laravel/echo-react';
 import AppLayout from '@/layouts/app-layout';
 import { type Account, type Investment } from '@/types';
-import { router, useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { MoreHorizontal, PlusIcon, TrendingUpIcon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 
@@ -130,9 +131,12 @@ function UpdateValueForm({ investmentId, onClose }: UpdateFormProps) {
 }
 
 export default function InvestmentsIndex({ investments, accounts }: Props) {
+    const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editing, setEditing] = useState<Investment | null>(null);
     const [updatingId, setUpdatingId] = useState<number | null>(null);
+
+    useEcho(`investments.${auth.user.id}`, ['.investments.created', '.investments.updated', '.investments.deleted'], () => router.reload({ only: ['investments'] }));
 
     function handleDelete(inv: Investment) {
         if (!confirm(`Delete "${inv.name}"?`)) return;

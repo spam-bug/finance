@@ -58,12 +58,13 @@ export type Credit = {
     id: number;
     user_id: number;
     name: string;
-    total_amount: string;
+    total_amount: string | null;
     payment_frequency: 'monthly' | 'quarterly';
-    number_of_payments: number;
+    number_of_payments: number | null;
     amount_per_payment: string;
     start_date: string;
     notes: string | null;
+    is_indefinite: boolean;
     payments?: CreditPayment[];
     created_at: string;
     updated_at: string;

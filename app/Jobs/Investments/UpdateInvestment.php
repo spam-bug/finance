@@ -3,6 +3,7 @@
 namespace App\Jobs\Investments;
 
 use App\Data\Investments\UpdateInvestmentData;
+use App\Events\Investments\InvestmentUpdated;
 use App\Models\Investment;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -19,6 +20,8 @@ class UpdateInvestment implements ShouldQueue
     public function handle(DatabaseManager $database): void
     {
         $database->transaction(fn () => $this->investment->update($this->data->toArray()));
+
+        broadcast(new InvestmentUpdated(user: $this->user, investment: $this->investment->fresh()));
     }
 
     public function failed(\Throwable $exception): void

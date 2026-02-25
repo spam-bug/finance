@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Investments;
 
+use App\Events\Investments\InvestmentDeleted;
 use App\Models\Investment;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,7 +18,11 @@ class DeleteInvestment implements ShouldQueue
 
     public function handle(DatabaseManager $database): void
     {
+        $investmentId = $this->investment->id;
+
         $database->transaction(fn () => $this->investment->delete());
+
+        broadcast(new InvestmentDeleted(user: $this->user, investmentId: $investmentId));
     }
 
     public function failed(\Throwable $exception): void

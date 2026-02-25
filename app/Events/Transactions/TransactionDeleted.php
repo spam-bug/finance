@@ -24,7 +24,12 @@ class TransactionDeleted implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('App.Models.User.' . $this->user->id),
+            new PrivateChannel('transactions.'.$this->user->id),
         ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'transactions.deleted';
     }
 }

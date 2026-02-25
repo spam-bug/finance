@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useEcho } from '@laravel/echo-react';
 import AppLayout from '@/layouts/app-layout';
 import { type Budget, type Category } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
@@ -56,7 +57,10 @@ function BudgetForm({ categories, month, year, onClose }: { categories: Category
 }
 
 export default function BudgetsIndex({ budgets, categories, month, year }: Props) {
+    const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+    useEcho(`budgets.${auth.user.id}`, ['.budgets.created', '.budgets.deleted'], () => router.reload({ only: ['budgets'] }));
 
     function navigate(direction: -1 | 1) {
         let m = month + direction;

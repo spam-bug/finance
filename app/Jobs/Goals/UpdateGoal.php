@@ -3,6 +3,7 @@
 namespace App\Jobs\Goals;
 
 use App\Data\Goals\UpdateGoalData;
+use App\Events\Goals\GoalUpdated;
 use App\Models\Goal;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -19,6 +20,8 @@ class UpdateGoal implements ShouldQueue
     public function handle(DatabaseManager $database): void
     {
         $database->transaction(fn () => $this->goal->update($this->data->toArray()));
+
+        broadcast(new GoalUpdated(user: $this->user, goal: $this->goal->fresh()));
     }
 
     public function failed(\Throwable $exception): void

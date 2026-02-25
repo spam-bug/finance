@@ -1,20 +1,63 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { CurrencyInput } from '@/components/ui/currency-input';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useEcho } from '@laravel/echo-react';
 import AppLayout from '@/layouts/app-layout';
 import { type Account, type SavingsGoal } from '@/types';
-import { router, useForm } from '@inertiajs/react';
-import { MoreHorizontal, PiggyBankIcon, PlusIcon } from 'lucide-react';
+import { router, useForm, usePage } from '@inertiajs/react';
+import { MoreHorizontal, PiggyBankIcon, PlusCircleIcon, PlusIcon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 
 type Props = { savings_goals: SavingsGoal[]; accounts: Account[] };
 
 function formatCurrency(v: string | number) {
     return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(v));
+}
+
+function AddContributionDialog({ goal }: { goal: SavingsGoal }) {
+    const [open, setOpen] = useState(false);
+    const form = useForm({ amount: '' });
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        const newAmount = Number(goal.current_amount) + Number(form.data.amount);
+        router.put(`/savings/${goal.id}`, {
+            name: goal.name,
+            monthly_contribution: goal.monthly_contribution,
+            target_amount: goal.target_amount,
+            current_amount: String(newAmount),
+            target_date: goal.target_date ?? '',
+            account_id: goal.account_id,
+        }, {
+            onSuccess: () => { setOpen(false); form.reset(); },
+        });
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="w-full h-8"><PlusCircleIcon className="mr-1 h-3.5 w-3.5" />Add Contribution</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-sm">
+                <DialogHeader><DialogTitle>Add to {goal.name}</DialogTitle></DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="amount">Amount to add</Label>
+                        <CurrencyInput id="amount" min="0.01" step="0.01" value={form.data.amount} onChange={(e) => form.setData('amount', e.target.value)} placeholder="0.00" autoFocus />
+                    </div>
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                        <Button type="submit" disabled={form.processing}>{form.processing ? 'Saving…' : 'Add'}</Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
 }
 
 type FormProps = { goal?: SavingsGoal; accounts: Account[]; onClose: () => void };
@@ -26,7 +69,7 @@ function SavingsGoalForm({ goal, accounts, onClose }: FormProps) {
         monthly_contribution: goal?.monthly_contribution ?? '',
         target_amount: goal?.target_amount ?? '',
         current_amount: goal?.current_amount ?? '0',
-        target_date: goal?.target_date?.split('T')[0] ?? '',
+        target_date: goal?.target_date ? goal.target_date.split('T')[0] : '',
         account_id: goal?.account_id ? String(goal.account_id) : '',
     });
 
@@ -50,17 +93,17 @@ function SavingsGoalForm({ goal, accounts, onClose }: FormProps) {
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="target_amount">Target Amount</Label>
-                    <Input id="target_amount" type="number" min="0.01" step="0.01" value={form.data.target_amount} onChange={(e) => form.setData('target_amount', e.target.value)} />
+                    <CurrencyInput id="target_amount" min="0.01" step="0.01" value={form.data.target_amount} onChange={(e) => form.setData('target_amount', e.target.value)} />
                     {form.errors.target_amount && <p className="text-destructive text-sm">{form.errors.target_amount}</p>}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="current_amount">Current Amount</Label>
-                    <Input id="current_amount" type="number" min="0" step="0.01" value={form.data.current_amount} onChange={(e) => form.setData('current_amount', e.target.value)} />
+                    <CurrencyInput id="current_amount" min="0" step="0.01" value={form.data.current_amount} onChange={(e) => form.setData('current_amount', e.target.value)} />
                 </div>
             </div>
             <div className="space-y-2">
                 <Label htmlFor="monthly_contribution">Monthly Contribution</Label>
-                <Input id="monthly_contribution" type="number" min="0" step="0.01" value={form.data.monthly_contribution} onChange={(e) => form.setData('monthly_contribution', e.target.value)} />
+                <CurrencyInput id="monthly_contribution" min="0" step="0.01" value={form.data.monthly_contribution} onChange={(e) => form.setData('monthly_contribution', e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -87,8 +130,11 @@ function SavingsGoalForm({ goal, accounts, onClose }: FormProps) {
 }
 
 export default function SavingsIndex({ savings_goals, accounts }: Props) {
+    const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editing, setEditing] = useState<SavingsGoal | null>(null);
+
+    useEcho(`savings.${auth.user.id}`, ['.savings.created', '.savings.updated', '.savings.deleted'], () => router.reload({ only: ['savings_goals'] }));
 
     function handleDelete(goal: SavingsGoal) {
         if (!confirm(`Delete "${goal.name}"?`)) return;
@@ -131,7 +177,7 @@ export default function SavingsIndex({ savings_goals, accounts }: Props) {
                                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                                     <div>
                                         <CardTitle className="text-base">{goal.name}</CardTitle>
-                                        {goal.target_date && <p className="text-muted-foreground text-xs">Target: {new Date(goal.target_date + 'T00:00:00').toLocaleDateString('en-PH', { year: 'numeric', month: 'short' })}</p>}
+                                        {goal.target_date && <p className="text-muted-foreground text-xs">Target: {new Date(goal.target_date.split('T')[0] + 'T00:00:00').toLocaleDateString('en-PH', { year: 'numeric', month: 'short' })}</p>}
                                     </div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -151,7 +197,8 @@ export default function SavingsIndex({ savings_goals, accounts }: Props) {
                                     <div className="h-2 w-full rounded-full bg-muted">
                                         <div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
                                     </div>
-                                    <p className="text-muted-foreground text-xs">{progress.toFixed(0)}% · {formatCurrency(goal.monthly_contribution)}/mo contribution</p>
+                                    <p className="text-muted-foreground text-xs">{progress.toFixed(0)}% · {formatCurrency(goal.monthly_contribution)}/mo</p>
+                                    <AddContributionDialog goal={goal} />
                                 </CardContent>
                             </Card>
                         );

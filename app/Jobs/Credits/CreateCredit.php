@@ -31,19 +31,29 @@ class CreateCredit implements ShouldQueue
                 'user_id' => $this->user->id,
             ]);
 
-            $paymentDate = Carbon::parse($this->data->start_date);
-
-            for ($i = 0; $i < $this->data->number_of_payments; $i++) {
+            if ($this->data->is_indefinite) {
+                // Generate only the first payment for indefinite credits
                 CreditPayment::query()->create([
                     'credit_id' => $credit->id,
                     'amount' => $this->data->amount_per_payment,
-                    'due_date' => $paymentDate->toDateString(),
+                    'due_date' => Carbon::parse($this->data->start_date)->toDateString(),
                 ]);
+            } else {
+                $paymentDate = Carbon::parse($this->data->start_date);
+                $count = $this->data->number_of_payments ?? 1;
 
-                if ($this->data->payment_frequency === CreditPaymentFrequency::Monthly) {
-                    $paymentDate->addMonth();
-                } else {
-                    $paymentDate->addMonths(3);
+                for ($i = 0; $i < $count; $i++) {
+                    CreditPayment::query()->create([
+                        'credit_id' => $credit->id,
+                        'amount' => $this->data->amount_per_payment,
+                        'due_date' => $paymentDate->toDateString(),
+                    ]);
+
+                    if ($this->data->payment_frequency === CreditPaymentFrequency::Monthly) {
+                        $paymentDate->addMonth();
+                    } else {
+                        $paymentDate->addMonths(3);
+                    }
                 }
             }
 

@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Savings;
 
+use App\Events\Savings\SavingsGoalDeleted;
 use App\Models\SavingsGoal;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,7 +18,11 @@ class DeleteSavingsGoal implements ShouldQueue
 
     public function handle(DatabaseManager $database): void
     {
+        $savingsGoalId = $this->savingsGoal->id;
+
         $database->transaction(fn () => $this->savingsGoal->delete());
+
+        broadcast(new SavingsGoalDeleted(user: $this->user, savingsGoalId: $savingsGoalId));
     }
 
     public function failed(\Throwable $exception): void
