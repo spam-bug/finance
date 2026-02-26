@@ -11,6 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Goals\GoalController;
 use App\Http\Controllers\Investments\InvestmentController;
 use App\Http\Controllers\Invitations\InvitationController;
+use App\Http\Controllers\Notifications\NotificationsController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Savings\SavingsGoalController;
 use App\Http\Controllers\Transactions\TransactionController;
@@ -80,4 +81,8 @@ Route::middleware('auth')->group(function (): void {
     // Users
     Route::get('users', [UsersController::class, 'index'])->name('users.index');
     Route::post('users', [UsersController::class, 'store'])->name('users.store');
+
+    // Notifications
+    Route::post('notifications/{id}/read', [NotificationsController::class, 'markRead'])->name('notifications.read');
+    Route::post('notifications/read-all', [NotificationsController::class, 'markAllRead'])->name('notifications.read-all');
 });

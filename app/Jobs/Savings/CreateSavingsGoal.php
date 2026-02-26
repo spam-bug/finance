@@ -6,6 +6,7 @@ use App\Data\Savings\CreateSavingsGoalData;
 use App\Events\Savings\SavingsGoalCreated;
 use App\Models\SavingsGoal;
 use App\Models\User;
+use App\Notifications\ActivityNotification;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\DatabaseManager;
@@ -33,6 +34,11 @@ class CreateSavingsGoal implements ShouldQueue
         );
 
         broadcast(new SavingsGoalCreated(user: $this->user, savingsGoal: $savingsGoal));
+
+        $this->user->notify(new ActivityNotification(
+            message: "Savings goal \"{$savingsGoal->name}\" was created.",
+            type: 'savings_goal_created',
+        ));
     }
 
     private static function computeMonthlyContribution(float $targetAmount, float $currentAmount, ?string $targetDate): float

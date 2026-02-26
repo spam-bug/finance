@@ -8,6 +8,7 @@ use App\Events\Credits\CreditCreated;
 use App\Models\Credit;
 use App\Models\CreditPayment;
 use App\Models\User;
+use App\Notifications\ActivityNotification;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\DatabaseManager;
@@ -76,6 +77,11 @@ class CreateCredit implements ShouldQueue
         });
 
         broadcast(new CreditCreated(user: $this->user, credit: $credit->load('payments')));
+
+        $this->user->notify(new ActivityNotification(
+            message: "Credit \"{$credit->name}\" was created.",
+            type: 'credit_created',
+        ));
     }
 
     public function failed(\Throwable $exception): void

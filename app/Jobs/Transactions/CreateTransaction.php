@@ -8,6 +8,7 @@ use App\Events\Transactions\TransactionCreated;
 use App\Models\Account;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Notifications\ActivityNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Queue\Queueable;
@@ -42,6 +43,13 @@ class CreateTransaction implements ShouldQueue
         });
 
         broadcast(new TransactionCreated(user: $this->user, transaction: $transaction->load(['account', 'category'])));
+
+        $typeLabel = $this->data->type === TransactionType::Income ? 'income' : 'expense';
+        $amount = '₱'.number_format((float) $this->data->amount, 2);
+        $this->user->notify(new ActivityNotification(
+            message: "New {$typeLabel} of {$amount} recorded.",
+            type: 'transaction_created',
+        ));
     }
 
     public function failed(\Throwable $exception): void

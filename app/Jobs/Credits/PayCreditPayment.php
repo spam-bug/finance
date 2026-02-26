@@ -8,6 +8,7 @@ use App\Models\Account;
 use App\Models\CreditPayment;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Notifications\ActivityNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Queue\Queueable;
@@ -34,7 +35,7 @@ class PayCreditPayment implements ShouldQueue
                 'type' => TransactionType::Expense,
                 'amount' => $this->payment->amount,
                 'date' => now()->toDateString(),
-                'description' => 'Credit payment: ' . $this->payment->credit->name,
+                'description' => 'Credit payment: '.$this->payment->credit->name,
             ]);
 
             $account->decrement('balance', $this->payment->amount);
@@ -46,7 +47,14 @@ class PayCreditPayment implements ShouldQueue
             ]);
         });
 
-        broadcast(new CreditPaymentPaid(user: $this->user, payment: $this->payment->fresh()->load(['credit', 'account'])));
+        $freshPayment = $this->payment->fresh()->load(['credit', 'account']);
+        broadcast(new CreditPaymentPaid(user: $this->user, payment: $freshPayment));
+
+        $amount = '₱'.number_format((float) $this->payment->amount, 2);
+        $this->user->notify(new ActivityNotification(
+            message: "Credit payment of {$amount} for \"{$this->payment->credit->name}\" was made.",
+            type: 'credit_payment_made',
+        ));
     }
 
     public function failed(\Throwable $exception): void

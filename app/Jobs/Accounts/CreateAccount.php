@@ -6,6 +6,7 @@ use App\Data\Accounts\CreateAccountData;
 use App\Events\Accounts\AccountCreated;
 use App\Models\Account;
 use App\Models\User;
+use App\Notifications\ActivityNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Queue\Queueable;
@@ -31,6 +32,11 @@ class CreateAccount implements ShouldQueue
         );
 
         broadcast(new AccountCreated(user: $this->user, account: $account));
+
+        $this->user->notify(new ActivityNotification(
+            message: "Account \"{$account->name}\" was created.",
+            type: 'account_created',
+        ));
     }
 
     public function failed(\Throwable $exception): void
