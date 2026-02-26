@@ -13,6 +13,7 @@ import { type Account, type Investment } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { MoreHorizontal, PlusIcon, TrendingUpIcon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
+import { toast } from 'sonner';
 
 type Props = { investments: Investment[]; accounts: Account[] };
 
@@ -143,7 +144,10 @@ export default function InvestmentsIndex({ investments, accounts }: Props) {
     const [updatingId, setUpdatingId] = useState<number | null>(null);
     const [deleting, setDeleting] = useState<Investment | null>(null);
 
-    useEcho(`investments.${auth.user.id}`, ['.investments.created', '.investments.updated', '.investments.deleted'], () => router.reload({ only: ['investments'] }));
+    const reloadInvestments = () => router.reload({ only: ['investments'] });
+    useEcho(`investments.${auth.user.id}`, '.investments.created', () => { reloadInvestments(); toast.success('Investment added.'); });
+    useEcho(`investments.${auth.user.id}`, '.investments.updated', () => { reloadInvestments(); toast.success('Investment updated.'); });
+    useEcho(`investments.${auth.user.id}`, '.investments.deleted', () => { reloadInvestments(); toast.success('Investment removed.'); });
 
     function handleDelete(inv: Investment) {
         setDeleting(inv);

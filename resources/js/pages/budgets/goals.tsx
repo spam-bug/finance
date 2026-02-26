@@ -14,6 +14,7 @@ import { type Account, type Goal } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { FlagIcon, MoreHorizontal, PlusCircleIcon, PlusIcon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
+import { toast } from 'sonner';
 
 type Props = { goals: Goal[]; accounts: Account[] };
 
@@ -137,7 +138,10 @@ export default function GoalsIndex({ goals, accounts }: Props) {
     const [editing, setEditing] = useState<Goal | null>(null);
     const [deleting, setDeleting] = useState<Goal | null>(null);
 
-    useEcho(`goals.${auth.user.id}`, ['.goals.created', '.goals.updated', '.goals.deleted'], () => router.reload({ only: ['goals'] }));
+    const reloadGoals = () => router.reload({ only: ['goals'] });
+    useEcho(`goals.${auth.user.id}`, '.goals.created', () => { reloadGoals(); toast.success('Goal created.'); });
+    useEcho(`goals.${auth.user.id}`, '.goals.updated', () => { reloadGoals(); toast.success('Goal updated.'); });
+    useEcho(`goals.${auth.user.id}`, '.goals.deleted', () => { reloadGoals(); toast.success('Goal removed.'); });
 
     function handleDelete(goal: Goal) {
         setDeleting(goal);

@@ -14,6 +14,7 @@ import { type Account, type Category } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { MoreHorizontal, PlusIcon, WalletIcon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
+import { toast } from 'sonner';
 
 type Props = { accounts: Account[]; categories: Category[] };
 
@@ -157,7 +158,10 @@ export default function AccountsIndex({ accounts, categories }: Props) {
     const [editingAccount, setEditingAccount] = useState<Account | null>(null);
     const [deleting, setDeleting] = useState<Account | null>(null);
 
-    useEcho(`accounts.${auth.user.id}`, ['.accounts.created', '.accounts.updated', '.accounts.deleted'], () => router.reload({ only: ['accounts'] }));
+    const reloadAccounts = () => router.reload({ only: ['accounts'] });
+    useEcho(`accounts.${auth.user.id}`, '.accounts.created', () => { reloadAccounts(); toast.success('Account added.'); });
+    useEcho(`accounts.${auth.user.id}`, '.accounts.updated', () => { reloadAccounts(); toast.success('Account updated.'); });
+    useEcho(`accounts.${auth.user.id}`, '.accounts.deleted', () => { reloadAccounts(); toast.success('Account removed.'); });
 
     function handleDelete(account: Account) {
         setDeleting(account);

@@ -15,6 +15,7 @@ import { type Account, type Credit, type CreditPayment } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { CheckCircle2, CreditCardIcon, InfinityIcon, MoreHorizontal, PlusIcon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
+import { toast } from 'sonner';
 
 type Props = { credits: Credit[]; accounts: Account[] };
 
@@ -293,7 +294,10 @@ export default function CreditsIndex({ credits, accounts }: Props) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [deleting, setDeleting] = useState<Credit | null>(null);
 
-    useEcho(`credits.${auth.user.id}`, ['.credits.created', '.credits.deleted', '.credits.payment-paid'], () => router.reload({ only: ['credits'] }));
+    const reloadCredits = () => router.reload({ only: ['credits'] });
+    useEcho(`credits.${auth.user.id}`, '.credits.created', () => { reloadCredits(); toast.success('Credit added.'); });
+    useEcho(`credits.${auth.user.id}`, '.credits.deleted', () => { reloadCredits(); toast.success('Credit removed.'); });
+    useEcho(`credits.${auth.user.id}`, '.credits.payment-paid', () => { reloadCredits(); toast.success('Payment recorded.'); });
 
     function handleDelete(credit: Credit) {
         setDeleting(credit);

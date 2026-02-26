@@ -11,6 +11,7 @@ import { type Budget, type Category } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, PlusIcon, Target } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
+import { toast } from 'sonner';
 
 type BudgetWithSpent = Budget & { spent: number };
 type Props = { budgets: BudgetWithSpent[]; categories: Category[]; month: number; year: number };
@@ -57,7 +58,9 @@ export default function BudgetsIndex({ budgets, categories, month, year }: Props
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [deleting, setDeleting] = useState<BudgetWithSpent | null>(null);
 
-    useEcho(`budgets.${auth.user.id}`, ['.budgets.created', '.budgets.deleted'], () => router.reload({ only: ['budgets'] }));
+    const reloadBudgets = () => router.reload({ only: ['budgets'] });
+    useEcho(`budgets.${auth.user.id}`, '.budgets.created', () => { reloadBudgets(); toast.success('Budget set.'); });
+    useEcho(`budgets.${auth.user.id}`, '.budgets.deleted', () => { reloadBudgets(); toast.success('Budget removed.'); });
 
     function navigate(direction: -1 | 1) {
         let m = month + direction;

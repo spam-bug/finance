@@ -14,6 +14,7 @@ import { type Category } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { MoreHorizontal, PlusIcon, TagIcon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
+import { toast } from 'sonner';
 
 type Props = { categories: Category[] };
 
@@ -113,7 +114,10 @@ export default function CategoriesIndex({ categories }: Props) {
     const { auth } = usePage<{ auth: { user: { id: number; permission: string } } }>().props;
     const canEdit = auth.user.permission === 'edit';
 
-    useEcho(`categories.${auth.user.id}`, ['.categories.created', '.categories.updated', '.categories.deleted'], () => router.reload({ only: ['categories'] }));
+    const reloadCategories = () => router.reload({ only: ['categories'] });
+    useEcho(`categories.${auth.user.id}`, '.categories.created', () => { reloadCategories(); toast.success('Category created.'); });
+    useEcho(`categories.${auth.user.id}`, '.categories.updated', () => { reloadCategories(); toast.success('Category updated.'); });
+    useEcho(`categories.${auth.user.id}`, '.categories.deleted', () => { reloadCategories(); toast.success('Category removed.'); });
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editing, setEditing] = useState<Category | null>(null);
     const [deleting, setDeleting] = useState<Category | null>(null);

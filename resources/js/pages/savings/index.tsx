@@ -13,6 +13,7 @@ import { type Account, type SavingsGoal } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { MoreHorizontal, PiggyBankIcon, PlusCircleIcon, PlusIcon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
+import { toast } from 'sonner';
 
 type Props = { savings_goals: SavingsGoal[]; accounts: Account[] };
 
@@ -140,7 +141,10 @@ export default function SavingsIndex({ savings_goals, accounts }: Props) {
     const [editing, setEditing] = useState<SavingsGoal | null>(null);
     const [deleting, setDeleting] = useState<SavingsGoal | null>(null);
 
-    useEcho(`savings.${auth.user.id}`, ['.savings.created', '.savings.updated', '.savings.deleted'], () => router.reload({ only: ['savings_goals'] }));
+    const reloadSavings = () => router.reload({ only: ['savings_goals'] });
+    useEcho(`savings.${auth.user.id}`, '.savings.created', () => { reloadSavings(); toast.success('Savings goal created.'); });
+    useEcho(`savings.${auth.user.id}`, '.savings.updated', () => { reloadSavings(); toast.success('Savings goal updated.'); });
+    useEcho(`savings.${auth.user.id}`, '.savings.deleted', () => { reloadSavings(); toast.success('Savings goal removed.'); });
 
     function handleDelete(goal: SavingsGoal) {
         setDeleting(goal);
