@@ -4,14 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useEcho } from '@laravel/echo-react';
+import { CategoryForm } from '@/components/categories/category-form';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { type Category } from '@/types';
-import { router, useForm, usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { MoreHorizontal, PlusIcon, TagIcon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { toast } from 'sonner';
@@ -24,93 +24,6 @@ const TYPE_COLORS: Record<string, string> = {
     expense: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
     both: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
 };
-
-type CategoryFormProps = { category?: Category; categories: Category[]; onClose: () => void };
-
-function CategoryForm({ category, categories, onClose }: CategoryFormProps) {
-    const isEditing = Boolean(category);
-    const form = useForm({
-        name: category?.name ?? '',
-        type: category?.type ?? 'expense',
-        parent_id: category?.parent_id ? String(category.parent_id) : '',
-        color: category?.color ?? '',
-    });
-
-    // Only allow top-level categories as parents (no nested > 2 levels)
-    const parentOptions = categories.filter((c) => !c.parent_id && c.id !== category?.id);
-
-    function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        const payload = {
-            ...form.data,
-            parent_id: form.data.parent_id ? Number(form.data.parent_id) : null,
-            color: form.data.color || null,
-        };
-        toast.loading('Processing...');
-        onClose();
-        if (isEditing && category) {
-            router.put(`/categories/${category.id}`, payload);
-        } else {
-            router.post('/categories', payload);
-        }
-    }
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} placeholder="e.g. Groceries" autoFocus />
-                {form.errors.name && <p className="text-destructive text-sm">{form.errors.name}</p>}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="type">Type</Label>
-                    <Select value={form.data.type} onValueChange={(v) => form.setData('type', v as Category['type'])}>
-                        <SelectTrigger id="type"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="income">Income</SelectItem>
-                            <SelectItem value="expense">Expense</SelectItem>
-                            <SelectItem value="both">Both</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="color">Color</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="color"
-                            value={form.data.color}
-                            onChange={(e) => form.setData('color', e.target.value)}
-                            placeholder="#3b82f6"
-                            maxLength={7}
-                        />
-                        {form.data.color && /^#[0-9A-Fa-f]{6}$/.test(form.data.color) && (
-                            <div className="h-9 w-9 shrink-0 rounded-md border" style={{ background: form.data.color }} />
-                        )}
-                    </div>
-                    {form.errors.color && <p className="text-destructive text-sm">{form.errors.color}</p>}
-                </div>
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="parent_id">Parent Category (optional)</Label>
-                <Select value={form.data.parent_id} onValueChange={(v) => form.setData('parent_id', v === '__none' ? '' : v)}>
-                    <SelectTrigger id="parent_id"><SelectValue placeholder="None (top-level)" /></SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="__none">None</SelectItem>
-                        {parentOptions.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-                <Button type="submit" disabled={form.processing}>{form.processing ? 'Saving…' : isEditing ? 'Save changes' : 'Create category'}</Button>
-            </div>
-        </form>
-    );
-}
 
 export default function CategoriesIndex({ categories }: Props) {
     const { auth } = usePage<{ auth: { user: { id: number; permission: string } } }>().props;

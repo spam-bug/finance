@@ -1,142 +1,20 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CurrencyInput } from '@/components/ui/currency-input';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEcho } from '@laravel/echo-react';
+import { AddContributionDialog } from '@/components/savings/add-contribution-dialog';
+import { SavingsGoalForm } from '@/components/savings/savings-goal-form';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { formatCurrency } from '@/lib/format';
 import AppLayout from '@/layouts/app-layout';
 import { type Account, type SavingsGoal } from '@/types';
-import { router, useForm, usePage } from '@inertiajs/react';
-import { MoreHorizontal, PiggyBankIcon, PlusCircleIcon, PlusIcon } from 'lucide-react';
+import { router, usePage } from '@inertiajs/react';
+import { MoreHorizontal, PiggyBankIcon, PlusIcon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { toast } from 'sonner';
 
 type Props = { savings_goals: SavingsGoal[]; accounts: Account[] };
-
-function formatCurrency(v: string | number) {
-    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(v));
-}
-
-function AddContributionDialog({ goal }: { goal: SavingsGoal }) {
-    const [open, setOpen] = useState(false);
-    const form = useForm({ amount: '' });
-
-    function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        const newAmount = Number(goal.current_amount) + Number(form.data.amount);
-        toast.loading('Processing...');
-        setOpen(false);
-        form.reset();
-        router.put(`/savings/${goal.id}`, {
-            name: goal.name,
-            target_amount: goal.target_amount,
-            current_amount: String(newAmount),
-            target_date: goal.target_date ?? '',
-            account_id: goal.account_id,
-        });
-    }
-
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="w-full h-8"><PlusCircleIcon className="mr-1 h-3.5 w-3.5" />Add Contribution</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-sm">
-                <DialogHeader><DialogTitle>Add to {goal.name}</DialogTitle></DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="amount">Amount to add</Label>
-                        <CurrencyInput id="amount" min="0.01" step="0.01" value={form.data.amount} onChange={(e) => form.setData('amount', e.target.value)} placeholder="0.00" autoFocus />
-                    </div>
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                        <Button type="submit" disabled={form.processing}>{form.processing ? 'Saving…' : 'Add'}</Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-type FormProps = { goal?: SavingsGoal; accounts: Account[]; onClose: () => void };
-
-function SavingsGoalForm({ goal, accounts, onClose }: FormProps) {
-    const isEditing = Boolean(goal);
-    const form = useForm({
-        name: goal?.name ?? '',
-        target_amount: goal?.target_amount ?? '',
-        current_amount: goal?.current_amount ?? '0',
-        target_date: goal?.target_date ? goal.target_date.split('T')[0] : '',
-        account_id: goal?.account_id ? String(goal.account_id) : '',
-    });
-
-    const computedMonthly = (() => {
-        const remaining = Math.max(0, Number(form.data.target_amount) - Number(form.data.current_amount));
-        if (!form.data.target_date || !form.data.target_amount) return null;
-        const months = Math.max(1, Math.round((new Date(form.data.target_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30)));
-        return remaining / months;
-    })();
-
-    function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        const payload = { ...form.data, account_id: form.data.account_id ? Number(form.data.account_id) : null };
-        toast.loading('Processing...');
-        onClose();
-        if (isEditing && goal) {
-            router.put(`/savings/${goal.id}`, payload);
-        } else {
-            router.post('/savings', payload);
-        }
-    }
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="name">Goal Name</Label>
-                <Input id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} placeholder="e.g. Emergency Fund" />
-                {form.errors.name && <p className="text-destructive text-sm">{form.errors.name}</p>}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="target_amount">Target Amount</Label>
-                    <CurrencyInput id="target_amount" min="0.01" step="0.01" value={form.data.target_amount} onChange={(e) => form.setData('target_amount', e.target.value)} />
-                    {form.errors.target_amount && <p className="text-destructive text-sm">{form.errors.target_amount}</p>}
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="current_amount">Current Amount</Label>
-                    <CurrencyInput id="current_amount" min="0" step="0.01" value={form.data.current_amount} onChange={(e) => form.setData('current_amount', e.target.value)} />
-                </div>
-            </div>
-            {computedMonthly !== null && (
-                <p className="text-muted-foreground text-sm">Monthly contribution: <strong>{formatCurrency(computedMonthly)}</strong></p>
-            )}
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="target_date">Target Date</Label>
-                    <Input id="target_date" type="date" value={form.data.target_date} onChange={(e) => form.setData('target_date', e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="account_id">Linked Account</Label>
-                    <Select value={form.data.account_id} onValueChange={(v) => form.setData('account_id', v === '__none' ? '' : v)}>
-                        <SelectTrigger id="account_id"><SelectValue placeholder="None" /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="__none">None</SelectItem>
-                            {accounts.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.name}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-                <Button type="submit" disabled={form.processing}>{form.processing ? 'Saving…' : isEditing ? 'Save changes' : 'Create Goal'}</Button>
-            </div>
-        </form>
-    );
-}
 
 export default function SavingsIndex({ savings_goals, accounts }: Props) {
     const { auth } = usePage<{ auth: { user: { id: number } } }>().props;

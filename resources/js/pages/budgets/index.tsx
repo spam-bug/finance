@@ -1,14 +1,13 @@
-import { CategoryCombobox } from '@/components/category-combobox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useEcho } from '@laravel/echo-react';
+import { BudgetForm, getCategoryLabel } from '@/components/budgets/budget-form';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { formatCurrency } from '@/lib/format';
 import AppLayout from '@/layouts/app-layout';
 import { type Budget, type Category } from '@/types';
-import { router, useForm, usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, PlusIcon, Target } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { toast } from 'sonner';
@@ -17,43 +16,6 @@ type BudgetWithSpent = Budget & { spent: number };
 type Props = { budgets: BudgetWithSpent[]; categories: Category[]; month: number; year: number };
 
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-function formatCurrency(v: string | number) {
-    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(v));
-}
-
-function getCategoryLabel(category: Category | undefined): string {
-    if (!category) return 'Unknown';
-    return category.parent ? `${category.parent.name} › ${category.name}` : category.name;
-}
-
-function BudgetForm({ categories, month, year, onClose }: { categories: Category[]; month: number; year: number; onClose: () => void }) {
-    const form = useForm({ category_id: '', amount: '', month: String(month), year: String(year) });
-    function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        toast.loading('Processing...');
-        onClose();
-        router.post('/budgets', { ...form.data, category_id: Number(form.data.category_id), month: Number(form.data.month), year: Number(form.data.year) });
-    }
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-                <Label>Category</Label>
-                <CategoryCombobox categories={categories} value={form.data.category_id} onChange={(v) => form.setData('category_id', v)} allowNone={false} />
-                {form.errors.category_id && <p className="text-destructive text-sm">{form.errors.category_id}</p>}
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="amount">Budget Amount</Label>
-                <Input id="amount" type="number" min="0.01" step="0.01" value={form.data.amount} onChange={(e) => form.setData('amount', e.target.value)} />
-                {form.errors.amount && <p className="text-destructive text-sm">{form.errors.amount}</p>}
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-                <Button type="submit" disabled={form.processing}>{form.processing ? 'Saving…' : 'Set Budget'}</Button>
-            </div>
-        </form>
-    );
-}
 
 export default function BudgetsIndex({ budgets, categories, month, year }: Props) {
     const { auth } = usePage<{ auth: { user: { id: number } } }>().props;

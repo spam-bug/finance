@@ -1,15 +1,14 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { InvitationStatus } from '@/components/invitations/invitation-status';
+import { SendInviteDialog } from '@/components/invitations/send-invite-dialog';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { formatDate } from '@/lib/format';
 import AppLayout from '@/layouts/app-layout';
-import { router, useForm, usePage } from '@inertiajs/react';
-import { MailIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import { router, usePage } from '@inertiajs/react';
+import { Trash2Icon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -25,88 +24,6 @@ type Invitation = {
 type Props = {
     invitations: Invitation[];
 };
-
-function formatDate(date: string) {
-    return new Date(date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function InvitationStatus({ invitation }: { invitation: Invitation }) {
-    if (invitation.accepted_at) {
-        return <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Accepted</Badge>;
-    }
-    if (new Date(invitation.expires_at) < new Date()) {
-        return <Badge variant="secondary" className="text-muted-foreground">Expired</Badge>;
-    }
-    return <Badge variant="outline" className="text-amber-600 dark:text-amber-400">Pending</Badge>;
-}
-
-function SendInviteDialog() {
-    const [open, setOpen] = useState(false);
-    const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
-        permission: 'edit' as 'edit' | 'view_only',
-    });
-
-    function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        toast.loading('Processing...', { id: 'form-processing' });
-        post('/invitations', {
-            onSuccess: () => {
-                setOpen(false);
-                reset();
-            },
-        });
-    }
-
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button size="sm"><PlusIcon className="mr-1 h-4 w-4" />Invite User</Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Send Invitation</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Email address</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            placeholder="colleague@example.com"
-                            value={data.email}
-                            onChange={(e) => setData('email', e.target.value)}
-                            autoFocus
-                        />
-                        {errors.email && <p className="text-destructive text-sm">{errors.email}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="permission">Permission level</Label>
-                        <Select value={data.permission} onValueChange={(v) => setData('permission', v as 'edit' | 'view_only')}>
-                            <SelectTrigger id="permission">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="edit">Edit — can add and manage data</SelectItem>
-                                <SelectItem value="view_only">View only — can only view data</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {errors.permission && <p className="text-destructive text-sm">{errors.permission}</p>}
-                    </div>
-
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                        <Button type="submit" disabled={processing}>
-                            <MailIcon className="mr-1 h-4 w-4" />
-                            {processing ? 'Sending…' : 'Send Invite'}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
-}
 
 export default function InvitationsIndex({ invitations }: Props) {
     const { auth } = usePage<{ auth: { user: { permission: string } } }>().props;
