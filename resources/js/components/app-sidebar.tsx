@@ -3,7 +3,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from '@/components/ui/sidebar';
 import { type Auth } from '@/types';
 import { usePage } from '@inertiajs/react';
-import { Landmark, LayoutDashboard, MailIcon, PiggyBank, Receipt, Tag, Target, TrendingUp, Wallet } from 'lucide-react';
+import { Landmark, LayoutDashboard, MailIcon, PiggyBank, Receipt, Tag, Target, TrendingUp, UserCogIcon, Wallet } from 'lucide-react';
 import * as React from 'react';
 
 const baseNavItems = [
@@ -57,16 +57,15 @@ const baseNavItems = [
     },
 ];
 
-const invitationsNavItem = {
-    title: 'Invitations',
-    url: '/invitations',
-    icon: MailIcon,
-};
+const editOnlyNavItems = [
+    { title: 'Invitations', url: '/invitations', icon: MailIcon },
+    { title: 'Users', url: '/users', icon: UserCogIcon },
+];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { auth } = usePage<{ auth: Auth & { user: { permission?: string } } }>().props;
     const canEdit = auth.user.permission === 'edit';
-    const navItems = canEdit ? [...baseNavItems, invitationsNavItem] : baseNavItems;
+    const navItems = canEdit ? [...baseNavItems, ...editOnlyNavItems] : baseNavItems;
 
     return (
         <Sidebar collapsible="icon" {...props}>

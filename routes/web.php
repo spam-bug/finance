@@ -14,6 +14,7 @@ use App\Http\Controllers\Invitations\InvitationController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Savings\SavingsGoalController;
 use App\Http\Controllers\Transactions\TransactionController;
+use App\Http\Controllers\Users\UsersController;
 use Illuminate\Support\Facades\Route;
 
 // Guest routes
@@ -75,4 +76,8 @@ Route::middleware('auth')->group(function (): void {
     Route::get('invitations', [InvitationController::class, 'index'])->name('invitations.index');
     Route::post('invitations', [InvitationController::class, 'store'])->name('invitations.store');
     Route::delete('invitations/{invitation}', [InvitationController::class, 'destroy'])->name('invitations.destroy');
+
+    // Users
+    Route::get('users', [UsersController::class, 'index'])->name('users.index');
+    Route::post('users', [UsersController::class, 'store'])->name('users.store');
 });
