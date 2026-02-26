@@ -9,11 +9,11 @@ class CategoryPolicy
 {
     public function update(User $user, Category $category): bool
     {
-        return $user->id === $category->user_id && $user->canEdit();
+        return $user->canEdit();
     }
 
     public function delete(User $user, Category $category): bool
     {
-        return $user->id === $category->user_id && $user->canEdit();
+        return $user->canEdit();
     }
 }

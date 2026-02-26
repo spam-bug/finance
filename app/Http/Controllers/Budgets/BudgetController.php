@@ -10,6 +10,7 @@ use App\Http\Requests\Budgets\StoreBudgetRequest;
 use App\Jobs\Budgets\CreateBudget;
 use App\Jobs\Budgets\DeleteBudget;
 use App\Models\Budget;
+use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -40,7 +41,7 @@ class BudgetController extends Controller
 
         return Inertia::render('budgets/index', [
             'budgets' => $budgetsWithSpending,
-            'categories' => $user->categories()->whereIn('type', [CategoryType::Expense->value, CategoryType::Both->value])->with('parent')->orderBy('name')->get(),
+            'categories' => Category::query()->whereIn('type', [CategoryType::Expense->value, CategoryType::Both->value])->with('parent')->orderBy('name')->get(),
             'month' => $month,
             'year' => $year,
         ]);

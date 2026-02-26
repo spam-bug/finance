@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Enums\CategoryType;
 use App\Models\Category;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -15,7 +14,6 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
             'parent_id' => null,
             'name' => fake()->word(),
             'type' => fake()->randomElement(CategoryType::cases()),
@@ -36,7 +34,6 @@ class CategoryFactory extends Factory
     public function withParent(Category $parent): static
     {
         return $this->state(fn (array $attributes) => [
-            'user_id' => $parent->user_id,
             'parent_id' => $parent->id,
             'type' => $parent->type,
         ]);

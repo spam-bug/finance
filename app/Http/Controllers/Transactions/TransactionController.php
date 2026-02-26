@@ -12,6 +12,7 @@ use App\Http\Requests\Transactions\UpdateTransactionRequest;
 use App\Jobs\Transactions\CreateTransaction;
 use App\Jobs\Transactions\DeleteTransaction;
 use App\Jobs\Transactions\UpdateTransaction;
+use App\Models\Category;
 use App\Models\Transaction;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -31,7 +32,7 @@ class TransactionController extends Controller
                 ->orderByDesc('id')
                 ->get(),
             'accounts' => $user->accounts()->where('is_active', true)->orderBy('name')->get(),
-            'categories' => $user->categories()
+            'categories' => Category::query()
                 ->whereIn('type', [CategoryType::Income->value, CategoryType::Both->value])
                 ->with('parent')
                 ->orderBy('name')
@@ -51,7 +52,7 @@ class TransactionController extends Controller
                 ->orderByDesc('id')
                 ->get(),
             'accounts' => $user->accounts()->where('is_active', true)->orderBy('name')->get(),
-            'categories' => $user->categories()
+            'categories' => Category::query()
                 ->whereIn('type', [CategoryType::Expense->value, CategoryType::Both->value])
                 ->with('parent')
                 ->orderBy('name')

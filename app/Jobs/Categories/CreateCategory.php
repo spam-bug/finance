@@ -3,6 +3,7 @@
 namespace App\Jobs\Categories;
 
 use App\Events\Categories\CategoryCreated;
+use App\Models\Category;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\DatabaseManager;
@@ -24,7 +25,7 @@ class CreateCategory implements ShouldQueue
     public function handle(DatabaseManager $database): void
     {
         $category = $database->transaction(
-            fn () => $this->user->categories()->create($this->data)
+            fn () => Category::query()->create($this->data)
         );
 
         broadcast(new CategoryCreated(user: $this->user, category: $category));

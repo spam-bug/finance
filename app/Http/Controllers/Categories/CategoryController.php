@@ -17,10 +17,8 @@ class CategoryController extends Controller
 {
     public function index(): Response
     {
-        $user = auth()->user();
-
         return Inertia::render('categories/index', [
-            'categories' => $user->categories()->with('parent')->orderBy('name')->get(),
+            'categories' => Category::query()->with('parent')->orderBy('name')->get(),
         ]);
     }
 

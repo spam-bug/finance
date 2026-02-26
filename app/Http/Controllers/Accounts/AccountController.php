@@ -11,6 +11,7 @@ use App\Jobs\Accounts\CreateAccount;
 use App\Jobs\Accounts\DeleteAccount;
 use App\Jobs\Accounts\UpdateAccount;
 use App\Models\Account;
+use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,7 +24,7 @@ class AccountController extends Controller
 
         return Inertia::render('accounts/index', [
             'accounts' => $user->accounts()->orderBy('name')->get(),
-            'categories' => $user->categories()->with('parent')->orderBy('name')->get(),
+            'categories' => Category::query()->with('parent')->orderBy('name')->get(),
         ]);
     }
 

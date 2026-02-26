@@ -11,21 +11,20 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::factory()->create([
+        User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
 
-        $this->seedCategories($user);
+        $this->seedCategories();
     }
 
-    private function seedCategories(User $user): void
+    private function seedCategories(): void
     {
         $incomeCategories = ['Salary', 'Freelance', 'Business', 'Other Income'];
 
         foreach ($incomeCategories as $name) {
             Category::query()->create([
-                'user_id' => $user->id,
                 'name' => $name,
                 'type' => CategoryType::Income,
             ]);
@@ -42,14 +41,12 @@ class DatabaseSeeder extends Seeder
 
         foreach ($expenseGroups as $parentName => $children) {
             $parent = Category::query()->create([
-                'user_id' => $user->id,
                 'name' => $parentName,
                 'type' => CategoryType::Expense,
             ]);
 
             foreach ($children as $childName) {
                 Category::query()->create([
-                    'user_id' => $user->id,
                     'parent_id' => $parent->id,
                     'name' => $childName,
                     'type' => CategoryType::Expense,
@@ -58,7 +55,6 @@ class DatabaseSeeder extends Seeder
         }
 
         Category::query()->create([
-            'user_id' => $user->id,
             'name' => 'Other',
             'type' => CategoryType::Both,
         ]);

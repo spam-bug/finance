@@ -17,7 +17,6 @@ class Category extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'user_id',
         'parent_id',
         'name',
         'type',
@@ -32,11 +31,6 @@ class Category extends Model
         return [
             'type' => CategoryType::class,
         ];
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
     }
 
     public function parent(): BelongsTo
