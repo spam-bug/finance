@@ -16,7 +16,6 @@ class UpdateSavingsGoalRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'monthly_contribution' => ['required', 'numeric', 'min:0'],
             'target_amount' => ['required', 'numeric', 'min:0.01'],
             'current_amount' => ['required', 'numeric', 'min:0'],
             'target_date' => ['nullable', 'date'],

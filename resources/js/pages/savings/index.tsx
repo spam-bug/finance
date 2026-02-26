@@ -29,7 +29,6 @@ function AddContributionDialog({ goal }: { goal: SavingsGoal }) {
         const newAmount = Number(goal.current_amount) + Number(form.data.amount);
         router.put(`/savings/${goal.id}`, {
             name: goal.name,
-            monthly_contribution: goal.monthly_contribution,
             target_amount: goal.target_amount,
             current_amount: String(newAmount),
             target_date: goal.target_date ?? '',
@@ -67,12 +66,18 @@ function SavingsGoalForm({ goal, accounts, onClose }: FormProps) {
     const isEditing = Boolean(goal);
     const form = useForm({
         name: goal?.name ?? '',
-        monthly_contribution: goal?.monthly_contribution ?? '',
         target_amount: goal?.target_amount ?? '',
         current_amount: goal?.current_amount ?? '0',
         target_date: goal?.target_date ? goal.target_date.split('T')[0] : '',
         account_id: goal?.account_id ? String(goal.account_id) : '',
     });
+
+    const computedMonthly = (() => {
+        const remaining = Math.max(0, Number(form.data.target_amount) - Number(form.data.current_amount));
+        if (!form.data.target_date || !form.data.target_amount) return null;
+        const months = Math.max(1, Math.round((new Date(form.data.target_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30)));
+        return remaining / months;
+    })();
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -102,10 +107,9 @@ function SavingsGoalForm({ goal, accounts, onClose }: FormProps) {
                     <CurrencyInput id="current_amount" min="0" step="0.01" value={form.data.current_amount} onChange={(e) => form.setData('current_amount', e.target.value)} />
                 </div>
             </div>
-            <div className="space-y-2">
-                <Label htmlFor="monthly_contribution">Monthly Contribution</Label>
-                <CurrencyInput id="monthly_contribution" min="0" step="0.01" value={form.data.monthly_contribution} onChange={(e) => form.setData('monthly_contribution', e.target.value)} />
-            </div>
+            {computedMonthly !== null && (
+                <p className="text-muted-foreground text-sm">Monthly contribution: <strong>{formatCurrency(computedMonthly)}</strong></p>
+            )}
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="target_date">Target Date</Label>

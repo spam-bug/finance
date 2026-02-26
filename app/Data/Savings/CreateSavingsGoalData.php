@@ -8,7 +8,6 @@ class CreateSavingsGoalData extends Data
 {
     public function __construct(
         public string $name,
-        public float $monthly_contribution,
         public float $target_amount,
         public float $current_amount = 0,
         public ?string $target_date = null,
