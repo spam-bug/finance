@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useEcho } from '@laravel/echo-react';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { type Account, type Goal } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
@@ -134,12 +135,17 @@ export default function GoalsIndex({ goals, accounts }: Props) {
     const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editing, setEditing] = useState<Goal | null>(null);
+    const [deleting, setDeleting] = useState<Goal | null>(null);
 
     useEcho(`goals.${auth.user.id}`, ['.goals.created', '.goals.updated', '.goals.deleted'], () => router.reload({ only: ['goals'] }));
 
     function handleDelete(goal: Goal) {
-        if (!confirm(`Delete "${goal.name}"?`)) return;
-        router.delete(`/goals/${goal.id}`);
+        setDeleting(goal);
+    }
+
+    function confirmDelete() {
+        if (!deleting) return;
+        router.delete(`/goals/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 
     return (
@@ -213,6 +219,13 @@ export default function GoalsIndex({ goals, accounts }: Props) {
                     {editing && <GoalForm goal={editing} accounts={accounts} onClose={() => setEditing(null)} />}
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={Boolean(deleting)}
+                description={`Delete "${deleting?.name}"? This action cannot be undone.`}
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleting(null)}
+            />
         </div>
     );
 }

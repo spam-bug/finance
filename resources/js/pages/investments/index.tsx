@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useEcho } from '@laravel/echo-react';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { type Account, type Investment } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
@@ -135,12 +136,17 @@ export default function InvestmentsIndex({ investments, accounts }: Props) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editing, setEditing] = useState<Investment | null>(null);
     const [updatingId, setUpdatingId] = useState<number | null>(null);
+    const [deleting, setDeleting] = useState<Investment | null>(null);
 
     useEcho(`investments.${auth.user.id}`, ['.investments.created', '.investments.updated', '.investments.deleted'], () => router.reload({ only: ['investments'] }));
 
     function handleDelete(inv: Investment) {
-        if (!confirm(`Delete "${inv.name}"?`)) return;
-        router.delete(`/investments/${inv.id}`);
+        setDeleting(inv);
+    }
+
+    function confirmDelete() {
+        if (!deleting) return;
+        router.delete(`/investments/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 
     const totalValue = investments.reduce((sum, i) => sum + Number(i.current_value), 0);
@@ -227,6 +233,13 @@ export default function InvestmentsIndex({ investments, accounts }: Props) {
                     {updatingId !== null && <UpdateValueForm investmentId={updatingId} onClose={() => setUpdatingId(null)} />}
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={Boolean(deleting)}
+                description={`Delete "${deleting?.name}"? All investment history will be removed.`}
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleting(null)}
+            />
         </div>
     );
 }

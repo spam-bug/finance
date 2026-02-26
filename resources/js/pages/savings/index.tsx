@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEcho } from '@laravel/echo-react';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { type Account, type SavingsGoal } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
@@ -133,12 +134,17 @@ export default function SavingsIndex({ savings_goals, accounts }: Props) {
     const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editing, setEditing] = useState<SavingsGoal | null>(null);
+    const [deleting, setDeleting] = useState<SavingsGoal | null>(null);
 
     useEcho(`savings.${auth.user.id}`, ['.savings.created', '.savings.updated', '.savings.deleted'], () => router.reload({ only: ['savings_goals'] }));
 
     function handleDelete(goal: SavingsGoal) {
-        if (!confirm(`Delete "${goal.name}"?`)) return;
-        router.delete(`/savings/${goal.id}`);
+        setDeleting(goal);
+    }
+
+    function confirmDelete() {
+        if (!deleting) return;
+        router.delete(`/savings/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 
     const totalSaved = savings_goals.reduce((sum, g) => sum + Number(g.current_amount), 0);
@@ -220,6 +226,13 @@ export default function SavingsIndex({ savings_goals, accounts }: Props) {
                     {editing && <SavingsGoalForm goal={editing} accounts={accounts} onClose={() => setEditing(null)} />}
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={Boolean(deleting)}
+                description={`Delete "${deleting?.name}"? This action cannot be undone.`}
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleting(null)}
+            />
         </div>
     );
 }

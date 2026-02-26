@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { MailIcon, PlusIcon, Trash2Icon } from 'lucide-react';
@@ -108,10 +109,15 @@ function SendInviteDialog() {
 export default function InvitationsIndex({ invitations }: Props) {
     const { auth } = usePage<{ auth: { user: { permission: string } } }>().props;
     const canEdit = auth.user.permission === 'edit';
+    const [revoking, setRevoking] = useState<number | null>(null);
 
     function handleRevoke(id: number) {
-        if (!confirm('Revoke this invitation?')) return;
-        router.delete(`/invitations/${id}`);
+        setRevoking(id);
+    }
+
+    function confirmRevoke() {
+        if (revoking === null) return;
+        router.delete(`/invitations/${revoking}`, { onFinish: () => setRevoking(null) });
     }
 
     const pending = invitations.filter((i) => !i.accepted_at && new Date(i.expires_at) >= new Date());
@@ -184,6 +190,15 @@ export default function InvitationsIndex({ invitations }: Props) {
                     )}
                 </CardContent>
             </Card>
+
+            <ConfirmDialog
+                open={revoking !== null}
+                title="Revoke invitation?"
+                description="The invitation link will be invalidated and the recipient will no longer be able to accept it."
+                confirmLabel="Revoke"
+                onConfirm={confirmRevoke}
+                onCancel={() => setRevoking(null)}
+            />
         </div>
     );
 }

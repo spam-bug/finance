@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useEcho } from '@laravel/echo-react';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { type Account, type Credit, type CreditPayment } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
@@ -245,12 +246,17 @@ function CreditCard({ credit, accounts, onDelete }: { credit: Credit & { is_inde
 export default function CreditsIndex({ credits, accounts }: Props) {
     const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [deleting, setDeleting] = useState<Credit | null>(null);
 
     useEcho(`credits.${auth.user.id}`, ['.credits.created', '.credits.deleted', '.credits.payment-paid'], () => router.reload({ only: ['credits'] }));
 
     function handleDelete(credit: Credit) {
-        if (!confirm(`Delete "${credit.name}"?`)) return;
-        router.delete(`/credits/${credit.id}`);
+        setDeleting(credit);
+    }
+
+    function confirmDelete() {
+        if (!deleting) return;
+        router.delete(`/credits/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 
     return (
@@ -286,6 +292,13 @@ export default function CreditsIndex({ credits, accounts }: Props) {
                     </div>
                 </div>
             )}
+
+            <ConfirmDialog
+                open={Boolean(deleting)}
+                description={`Delete "${deleting?.name}"? All payment records will be removed.`}
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleting(null)}
+            />
         </div>
     );
 }

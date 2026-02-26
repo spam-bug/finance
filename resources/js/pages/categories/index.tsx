@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useEcho } from '@laravel/echo-react';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { type Category } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
@@ -115,10 +116,15 @@ export default function CategoriesIndex({ categories }: Props) {
     useEcho(`categories.${auth.user.id}`, ['.categories.created', '.categories.updated', '.categories.deleted'], () => router.reload({ only: ['categories'] }));
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editing, setEditing] = useState<Category | null>(null);
+    const [deleting, setDeleting] = useState<Category | null>(null);
 
     function handleDelete(category: Category) {
-        if (!confirm(`Delete "${category.name}"? Transactions using this category will become uncategorized.`)) return;
-        router.delete(`/categories/${category.id}`);
+        setDeleting(category);
+    }
+
+    function confirmDelete() {
+        if (!deleting) return;
+        router.delete(`/categories/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 
     const topLevel = categories.filter((c) => !c.parent_id);
@@ -211,6 +217,13 @@ export default function CategoriesIndex({ categories }: Props) {
                     {editing && <CategoryForm category={editing} categories={categories} onClose={() => setEditing(null)} />}
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={Boolean(deleting)}
+                description={`Delete "${deleting?.name}"? Transactions using this category will become uncategorized.`}
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleting(null)}
+            />
         </div>
     );
 }

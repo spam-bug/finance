@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEcho } from '@laravel/echo-react';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { type Budget, type Category } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
@@ -59,6 +60,7 @@ function BudgetForm({ categories, month, year, onClose }: { categories: Category
 export default function BudgetsIndex({ budgets, categories, month, year }: Props) {
     const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [deleting, setDeleting] = useState<BudgetWithSpent | null>(null);
 
     useEcho(`budgets.${auth.user.id}`, ['.budgets.created', '.budgets.deleted'], () => router.reload({ only: ['budgets'] }));
 
@@ -70,9 +72,13 @@ export default function BudgetsIndex({ budgets, categories, month, year }: Props
         router.get('/budgets', { month: m, year: y });
     }
 
-    function handleDelete(budget: Budget) {
-        if (!confirm('Remove this budget?')) return;
-        router.delete(`/budgets/${budget.id}`);
+    function handleDelete(budget: BudgetWithSpent) {
+        setDeleting(budget);
+    }
+
+    function confirmDelete() {
+        if (!deleting) return;
+        router.delete(`/budgets/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 
     const totalBudget = budgets.reduce((sum, b) => sum + Number(b.amount), 0);
@@ -152,6 +158,14 @@ export default function BudgetsIndex({ budgets, categories, month, year }: Props
                     </div>
                 </div>
             )}
+
+            <ConfirmDialog
+                open={Boolean(deleting)}
+                confirmLabel="Remove"
+                description="Remove this budget? The category spending data will be retained."
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleting(null)}
+            />
         </div>
     );
 }

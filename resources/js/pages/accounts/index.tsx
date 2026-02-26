@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useEcho } from '@laravel/echo-react';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { type Account, type Category } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
@@ -154,12 +155,17 @@ export default function AccountsIndex({ accounts, categories }: Props) {
     const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+    const [deleting, setDeleting] = useState<Account | null>(null);
 
     useEcho(`accounts.${auth.user.id}`, ['.accounts.created', '.accounts.updated', '.accounts.deleted'], () => router.reload({ only: ['accounts'] }));
 
     function handleDelete(account: Account) {
-        if (!confirm(`Delete "${account.name}"? This cannot be undone.`)) return;
-        router.delete(`/accounts/${account.id}`);
+        setDeleting(account);
+    }
+
+    function confirmDelete() {
+        if (!deleting) return;
+        router.delete(`/accounts/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 
     const activeAccounts = accounts.filter((a) => a.is_active);
@@ -226,6 +232,13 @@ export default function AccountsIndex({ accounts, categories }: Props) {
                     {editingAccount && <AccountForm account={editingAccount} onClose={() => setEditingAccount(null)} />}
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={Boolean(deleting)}
+                description={`Delete "${deleting?.name}"? All transactions for this account will also be removed.`}
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleting(null)}
+            />
         </div>
     );
 }
