@@ -28,7 +28,7 @@ function AddContributionDialog({ goal }: { goal: SavingsGoal }) {
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         const newAmount = Number(goal.current_amount) + Number(form.data.amount);
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.loading('Processing...');
         setOpen(false);
         form.reset();
         router.put(`/savings/${goal.id}`, {
@@ -84,7 +84,7 @@ function SavingsGoalForm({ goal, accounts, onClose }: FormProps) {
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         const payload = { ...form.data, account_id: form.data.account_id ? Number(form.data.account_id) : null };
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.loading('Processing...');
         onClose();
         if (isEditing && goal) {
             router.put(`/savings/${goal.id}`, payload);
@@ -144,10 +144,13 @@ export default function SavingsIndex({ savings_goals, accounts }: Props) {
     const [editing, setEditing] = useState<SavingsGoal | null>(null);
     const [deleting, setDeleting] = useState<SavingsGoal | null>(null);
 
-    const reloadSavings = () => router.reload({ only: ['savings_goals'] });
-    useEcho(`savings.${auth.user.id}`, '.savings.created', () => { reloadSavings(); toast.success('Savings goal created.', { id: 'form-processing' }); });
-    useEcho(`savings.${auth.user.id}`, '.savings.updated', () => { reloadSavings(); toast.success('Savings goal updated.', { id: 'form-processing' }); });
-    useEcho(`savings.${auth.user.id}`, '.savings.deleted', () => { reloadSavings(); toast.success('Savings goal removed.', { id: 'form-processing' }); });
+    const reloadSavings = (event: { message: string }) => {
+        router.reload({ only: ['savings_goals'] });
+        toast.success(event.message);
+    };
+    useEcho(`savings.${auth.user.id}`, '.savings.created', (event) => { reloadSavings(event); });
+    useEcho(`savings.${auth.user.id}`, '.savings.updated', (event) => { reloadSavings(event); });
+    useEcho(`savings.${auth.user.id}`, '.savings.deleted', (event) => { reloadSavings(event); });
 
     function handleDelete(goal: SavingsGoal) {
         setDeleting(goal);
@@ -155,7 +158,7 @@ export default function SavingsIndex({ savings_goals, accounts }: Props) {
 
     function confirmDelete() {
         if (!deleting) return;
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.loading('Processing...');
         router.delete(`/savings/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

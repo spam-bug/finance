@@ -31,7 +31,7 @@ function BudgetForm({ categories, month, year, onClose }: { categories: Category
     const form = useForm({ category_id: '', amount: '', month: String(month), year: String(year) });
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.loading('Processing...');
         onClose();
         router.post('/budgets', { ...form.data, category_id: Number(form.data.category_id), month: Number(form.data.month), year: Number(form.data.year) });
     }
@@ -60,9 +60,12 @@ export default function BudgetsIndex({ budgets, categories, month, year }: Props
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [deleting, setDeleting] = useState<BudgetWithSpent | null>(null);
 
-    const reloadBudgets = () => router.reload({ only: ['budgets'] });
-    useEcho(`budgets.${auth.user.id}`, '.budgets.created', () => { reloadBudgets(); toast.success('Budget set.', { id: 'form-processing' }); });
-    useEcho(`budgets.${auth.user.id}`, '.budgets.deleted', () => { reloadBudgets(); toast.success('Budget removed.', { id: 'form-processing' }); });
+    const reloadBudgets = (event: { message: string }) => {
+        router.reload({ only: ['budgets'] })
+        toast.success(event.message)
+    }
+    useEcho(`budgets.${auth.user.id}`, '.budgets.created', (event) => { reloadBudgets(event) });
+    useEcho(`budgets.${auth.user.id}`, '.budgets.deleted', (event) => { reloadBudgets(event) });
 
     function navigate(direction: -1 | 1) {
         let m = month + direction;
@@ -78,7 +81,7 @@ export default function BudgetsIndex({ budgets, categories, month, year }: Props
 
     function confirmDelete() {
         if (!deleting) return;
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.loading('Processing...');
         router.delete(`/budgets/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

@@ -61,7 +61,7 @@ function CreditForm({ onClose }: { onClose: () => void }) {
             payload.number_of_payments = form.data.number_of_payments;
             payload.amount_per_payment = computedPerPayment ?? form.data.amount_per_payment;
         }
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.loading('Processing...');
         onClose();
         router.post('/credits', payload);
     }
@@ -160,7 +160,7 @@ function PaymentRow({ payment, accounts }: { payment: CreditPayment; accounts: A
 
     function handlePay(e: React.FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.loading('Processing...');
         setIsPaying(false);
         router.post(`/credit-payments/${payment.id}/pay`, { account_id: Number(form.data.account_id) });
     }
@@ -298,10 +298,13 @@ export default function CreditsIndex({ credits, accounts }: Props) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [deleting, setDeleting] = useState<Credit | null>(null);
 
-    const reloadCredits = () => router.reload({ only: ['credits'] });
-    useEcho(`credits.${auth.user.id}`, '.credits.created', () => { reloadCredits(); toast.success('Credit added.', { id: 'form-processing' }); });
-    useEcho(`credits.${auth.user.id}`, '.credits.deleted', () => { reloadCredits(); toast.success('Credit removed.', { id: 'form-processing' }); });
-    useEcho(`credits.${auth.user.id}`, '.credits.payment-paid', () => { reloadCredits(); toast.success('Payment recorded.', { id: 'form-processing' }); });
+    const reloadCredits = (event: { message: string }) => {
+        router.reload({ only: ['credits'] });
+        toast.success(event.message);
+    };
+    useEcho(`credits.${auth.user.id}`, '.credits.created', (event) => { reloadCredits(event); });
+    useEcho(`credits.${auth.user.id}`, '.credits.deleted', (event) => { reloadCredits(event); });
+    useEcho(`credits.${auth.user.id}`, '.credits.payment-paid', (event) => { reloadCredits(event); });
 
     function handleDelete(credit: Credit) {
         setDeleting(credit);
@@ -309,7 +312,7 @@ export default function CreditsIndex({ credits, accounts }: Props) {
 
     function confirmDelete() {
         if (!deleting) return;
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.loading('Processing...');
         router.delete(`/credits/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

@@ -44,7 +44,7 @@ function AccountForm({ account, onClose }: AccountFormProps) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.loading('Processing...');
         onClose();
         if (isEditing && account) {
             router.put(`/accounts/${account.id}`, form.data);
@@ -160,10 +160,14 @@ export default function AccountsIndex({ accounts, categories }: Props) {
     const [editingAccount, setEditingAccount] = useState<Account | null>(null);
     const [deleting, setDeleting] = useState<Account | null>(null);
 
-    const reloadAccounts = () => router.reload({ only: ['accounts'] });
-    useEcho(`accounts.${auth.user.id}`, '.accounts.created', () => { reloadAccounts(); toast.success('Account added.', { id: 'form-processing' }); });
-    useEcho(`accounts.${auth.user.id}`, '.accounts.updated', () => { reloadAccounts(); toast.success('Account updated.', { id: 'form-processing' }); });
-    useEcho(`accounts.${auth.user.id}`, '.accounts.deleted', () => { reloadAccounts(); toast.success('Account removed.', { id: 'form-processing' }); });
+    const reloadAccounts = (event: { message: string }) => {
+        router.reload({ only: ['accounts'] })
+        toast.success(event.message);
+    }
+
+    useEcho(`accounts.${auth.user.id}`, '.accounts.created', (event) => { reloadAccounts(event) });
+    useEcho(`accounts.${auth.user.id}`, '.accounts.updated', (event) => { reloadAccounts(event) });
+    useEcho(`accounts.${auth.user.id}`, '.accounts.deleted', (event) => { reloadAccounts(event) });
 
     function handleDelete(account: Account) {
         setDeleting(account);
@@ -171,7 +175,7 @@ export default function AccountsIndex({ accounts, categories }: Props) {
 
     function confirmDelete() {
         if (!deleting) return;
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.loading('Processing...');
         router.delete(`/accounts/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

@@ -29,6 +29,11 @@ class InvestmentUpdated implements ShouldBroadcast
         ];
     }
 
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Investment has been updated.'];
+    }
+
     public function broadcastAs(): string
     {
         return 'investments.updated';

@@ -15,11 +15,14 @@ type Props = {
 export default function ExpensesIndex({ transactions, accounts, categories }: Props) {
     const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
 
-    const reload = () => router.reload({ only: ['transactions', 'accounts'] });
-    useEcho(`transactions.${auth.user.id}`, '.transactions.created', () => { reload(); toast.success('Expense added.', { id: 'form-processing' }); });
-    useEcho(`transactions.${auth.user.id}`, '.transactions.updated', () => { reload(); toast.success('Expense updated.', { id: 'form-processing' }); });
-    useEcho(`transactions.${auth.user.id}`, '.transactions.deleted', () => { reload(); toast.success('Expense removed.', { id: 'form-processing' }); });
-    useEcho(`accounts.${auth.user.id}`, '.accounts.updated', reload);
+    const reloadTransactions = (event: { message: string }) => {
+        router.reload({ only: ['transactions', 'accounts'] });
+        toast.success(event.message);
+    };
+    useEcho(`transactions.${auth.user.id}`, '.transactions.created', (event) => { reloadTransactions(event); });
+    useEcho(`transactions.${auth.user.id}`, '.transactions.updated', (event) => { reloadTransactions(event); });
+    useEcho(`transactions.${auth.user.id}`, '.transactions.deleted', (event) => { reloadTransactions(event); });
+    useEcho(`accounts.${auth.user.id}`, '.accounts.updated', () => router.reload({ only: ['transactions', 'accounts'] }));
 
     return (
         <TransactionList

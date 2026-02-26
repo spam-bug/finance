@@ -28,6 +28,11 @@ class InvestmentDeleted implements ShouldBroadcast
         ];
     }
 
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Investment has been deleted.'];
+    }
+
     public function broadcastAs(): string
     {
         return 'investments.deleted';

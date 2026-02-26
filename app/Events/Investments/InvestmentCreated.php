@@ -29,6 +29,11 @@ class InvestmentCreated implements ShouldBroadcast
         ];
     }
 
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Investment has been created.'];
+    }
+
     public function broadcastAs(): string
     {
         return 'investments.created';
