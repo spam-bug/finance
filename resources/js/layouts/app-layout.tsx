@@ -4,8 +4,8 @@ import { Separator } from '@/components/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { usePage } from '@inertiajs/react';
-import { type ReactNode, useEffect } from 'react';
+import { router, usePage } from '@inertiajs/react';
+import { type ReactNode, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
 interface AppLayoutProps {
@@ -15,6 +15,28 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children, breadcrumb }: AppLayoutProps) {
     const { flash } = usePage<{ flash: { success?: string; error?: string; warning?: string } }>().props;
+    const loadingToastId = useRef<string | number | undefined>(undefined);
+
+    useEffect(() => {
+        const removeBeforeListener = router.on('before', (event) => {
+            const method = event.detail.visit.method.toLowerCase();
+            if (['post', 'put', 'patch', 'delete'].includes(method)) {
+                loadingToastId.current = toast.loading('Processing...');
+            }
+        });
+
+        const removeFinishListener = router.on('finish', () => {
+            if (loadingToastId.current !== undefined) {
+                toast.dismiss(loadingToastId.current);
+                loadingToastId.current = undefined;
+            }
+        });
+
+        return () => {
+            removeBeforeListener();
+            removeFinishListener();
+        };
+    }, []);
 
     useEffect(() => {
         if (flash?.success) toast.success(flash.success);

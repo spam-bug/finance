@@ -102,27 +102,28 @@ export default function ProfileEdit() {
                             )}
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="new_password">New Password</Label>
-                            <Input
-                                id="new_password"
-                                type="password"
-                                value={passwordForm.data.password}
-                                onChange={(e) => passwordForm.setData('password', e.target.value)}
-                                autoComplete="new-password"
-                            />
-                            {passwordForm.errors.password && <p className="text-destructive text-sm">{passwordForm.errors.password}</p>}
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="password_confirmation">Confirm Password</Label>
-                            <Input
-                                id="password_confirmation"
-                                type="password"
-                                value={passwordForm.data.password_confirmation}
-                                onChange={(e) => passwordForm.setData('password_confirmation', e.target.value)}
-                                autoComplete="new-password"
-                            />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="new_password">New Password</Label>
+                                <Input
+                                    id="new_password"
+                                    type="password"
+                                    value={passwordForm.data.password}
+                                    onChange={(e) => passwordForm.setData('password', e.target.value)}
+                                    autoComplete="new-password"
+                                />
+                                {passwordForm.errors.password && <p className="text-destructive text-sm">{passwordForm.errors.password}</p>}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="password_confirmation">Confirm Password</Label>
+                                <Input
+                                    id="password_confirmation"
+                                    type="password"
+                                    value={passwordForm.data.password_confirmation}
+                                    onChange={(e) => passwordForm.setData('password_confirmation', e.target.value)}
+                                    autoComplete="new-password"
+                                />
+                            </div>
                         </div>
 
                         <Button type="submit" disabled={passwordForm.processing}>
