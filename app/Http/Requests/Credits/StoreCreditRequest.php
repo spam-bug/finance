@@ -23,6 +23,7 @@ class StoreCreditRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'is_indefinite' => ['boolean'],
+            'divide_into_monthly' => ['boolean'],
             'payment_frequency' => ['required', Rule::enum(CreditPaymentFrequency::class)],
             'amount_per_payment' => ['required', 'numeric', 'min:0.01'],
             'start_date' => ['required', 'date'],

@@ -26,6 +26,7 @@ class Credit extends Model
         'start_date',
         'notes',
         'is_indefinite',
+        'divide_into_monthly',
     ];
 
     /**
@@ -39,6 +40,7 @@ class Credit extends Model
             'amount_per_payment' => 'decimal:2',
             'start_date' => 'date',
             'is_indefinite' => 'boolean',
+            'divide_into_monthly' => 'boolean',
         ];
     }
 

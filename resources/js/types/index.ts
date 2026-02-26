@@ -65,6 +65,7 @@ export type Credit = {
     start_date: string;
     notes: string | null;
     is_indefinite: boolean;
+    divide_into_monthly: boolean;
     payments?: CreditPayment[];
     created_at: string;
     updated_at: string;

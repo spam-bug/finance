@@ -42,12 +42,27 @@ class CreateCredit implements ShouldQueue
                 $paymentDate = Carbon::parse($this->data->start_date);
                 $count = $this->data->number_of_payments ?? 1;
 
+                $divideIntoMonthly = $this->data->payment_frequency === CreditPaymentFrequency::Quarterly
+                    && $this->data->divide_into_monthly;
+
                 for ($i = 0; $i < $count; $i++) {
-                    CreditPayment::query()->create([
-                        'credit_id' => $credit->id,
-                        'amount' => $this->data->amount_per_payment,
-                        'due_date' => $paymentDate->toDateString(),
-                    ]);
+                    if ($divideIntoMonthly) {
+                        $monthlyAmount = round($this->data->amount_per_payment / 3, 2);
+
+                        for ($m = 0; $m < 3; $m++) {
+                            CreditPayment::query()->create([
+                                'credit_id' => $credit->id,
+                                'amount' => $monthlyAmount,
+                                'due_date' => $paymentDate->copy()->addMonths($m)->toDateString(),
+                            ]);
+                        }
+                    } else {
+                        CreditPayment::query()->create([
+                            'credit_id' => $credit->id,
+                            'amount' => $this->data->amount_per_payment,
+                            'due_date' => $paymentDate->toDateString(),
+                        ]);
+                    }
 
                     if ($this->data->payment_frequency === CreditPaymentFrequency::Monthly) {
                         $paymentDate->addMonth();

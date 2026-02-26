@@ -13,6 +13,7 @@ class CreateCreditData extends Data
         public float $amount_per_payment,
         public string $start_date,
         public bool $is_indefinite = false,
+        public bool $divide_into_monthly = false,
         public ?float $total_amount = null,
         public ?int $number_of_payments = null,
         public ?string $notes = null,

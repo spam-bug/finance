@@ -30,6 +30,7 @@ function CreditForm({ onClose }: { onClose: () => void }) {
     const form = useForm({
         name: '',
         is_indefinite: false,
+        divide_into_monthly: false,
         total_amount: '',
         payment_frequency: 'monthly',
         number_of_payments: '12',
@@ -47,6 +48,7 @@ function CreditForm({ onClose }: { onClose: () => void }) {
         const payload: Record<string, unknown> = {
             name: form.data.name,
             is_indefinite: form.data.is_indefinite,
+            divide_into_monthly: form.data.payment_frequency === 'quarterly' && !form.data.is_indefinite ? form.data.divide_into_monthly : false,
             payment_frequency: form.data.payment_frequency,
             start_date: form.data.start_date,
             notes: form.data.notes,
@@ -109,7 +111,7 @@ function CreditForm({ onClose }: { onClose: () => void }) {
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="payment_frequency">Frequency</Label>
-                    <Select value={form.data.payment_frequency} onValueChange={(v) => form.setData('payment_frequency', v)}>
+                    <Select value={form.data.payment_frequency} onValueChange={(v) => { form.setData('payment_frequency', v); if (v !== 'quarterly') form.setData('divide_into_monthly', false); }}>
                         <SelectTrigger id="payment_frequency"><SelectValue /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="monthly">Monthly</SelectItem>
@@ -122,6 +124,19 @@ function CreditForm({ onClose }: { onClose: () => void }) {
                     <Input id="start_date" type="date" value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} />
                 </div>
             </div>
+
+            {form.data.payment_frequency === 'quarterly' && !form.data.is_indefinite && (
+                <div className="flex items-center gap-2">
+                    <input
+                        id="divide_into_monthly"
+                        type="checkbox"
+                        checked={form.data.divide_into_monthly}
+                        onChange={(e) => form.setData('divide_into_monthly', e.target.checked)}
+                        className="h-4 w-4 rounded border"
+                    />
+                    <Label htmlFor="divide_into_monthly">Divide each quarterly payment into 3 monthly payments</Label>
+                </div>
+            )}
 
             <div className="space-y-2">
                 <Label htmlFor="notes">Notes</Label>
@@ -179,6 +194,15 @@ function PaymentRow({ payment, accounts }: { payment: CreditPayment; accounts: A
             )}
         </div>
     );
+}
+
+function groupByQuarter(payments: CreditPayment[]): CreditPayment[][] {
+    const sorted = [...payments].sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+    const groups: CreditPayment[][] = [];
+    for (let i = 0; i < sorted.length; i += 3) {
+        groups.push(sorted.slice(i, i + 3));
+    }
+    return groups;
 }
 
 function CreditCard({ credit, accounts, onDelete }: { credit: Credit & { is_indefinite?: boolean }; accounts: Account[]; onDelete: () => void }) {
@@ -243,9 +267,20 @@ function CreditCard({ credit, accounts, onDelete }: { credit: Credit & { is_inde
 
                 {expanded && (
                     <div className="space-y-2 pt-1">
-                        {payments.map((payment) => (
-                            <PaymentRow key={payment.id} payment={payment} accounts={accounts} />
-                        ))}
+                        {credit.payment_frequency === 'quarterly' && credit.divide_into_monthly ? (
+                            groupByQuarter(payments).map((group, qi) => (
+                                <div key={qi} className="space-y-1">
+                                    <p className="text-muted-foreground text-xs font-medium">Quarter {qi + 1}</p>
+                                    {group.map((payment) => (
+                                        <PaymentRow key={payment.id} payment={payment} accounts={accounts} />
+                                    ))}
+                                </div>
+                            ))
+                        ) : (
+                            payments.map((payment) => (
+                                <PaymentRow key={payment.id} payment={payment} accounts={accounts} />
+                            ))
+                        )}
                     </div>
                 )}
             </CardContent>
