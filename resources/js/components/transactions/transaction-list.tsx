@@ -1,4 +1,5 @@
 import { CategoryCombobox } from '@/components/category-combobox';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CurrencyInput } from '@/components/ui/currency-input';
@@ -164,10 +165,15 @@ function TransactionForm({ transaction, accounts, categories, transactionType, d
 export function TransactionList({ transactions, accounts, categories, type, title, description }: TransactionListProps) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+    const [deleting, setDeleting] = useState<Transaction | null>(null);
 
     function handleDelete(transaction: Transaction) {
-        if (!confirm(`Delete this transaction of ${formatCurrency(transaction.amount)}? This will also revert the account balance.`)) return;
-        router.delete(`/transactions/${transaction.id}`);
+        setDeleting(transaction);
+    }
+
+    function confirmDelete() {
+        if (!deleting) return;
+        router.delete(`/transactions/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 
     const totalAmount = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
@@ -261,6 +267,13 @@ export function TransactionList({ transactions, accounts, categories, type, titl
                     )}
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={Boolean(deleting)}
+                description={`Delete this transaction of ${deleting ? formatCurrency(deleting.amount) : ''}? This will also revert the account balance.`}
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleting(null)}
+            />
         </div>
     );
 }

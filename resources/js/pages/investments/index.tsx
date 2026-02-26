@@ -75,18 +75,23 @@ function InvestmentForm({ investment, accounts, onClose }: InvestmentFormProps) 
                     </Select>
                 </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-                {!isEditing && (
+            {!isEditing ? (
+                <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="initial_value">Initial Value</Label>
                         <Input id="initial_value" type="number" min="0" step="0.01" value={form.data.initial_value} onChange={(e) => form.setData('initial_value', e.target.value)} />
                     </div>
-                )}
+                    <div className="space-y-2">
+                        <Label htmlFor="current_value">Current Value</Label>
+                        <Input id="current_value" type="number" min="0" step="0.01" value={form.data.current_value} onChange={(e) => form.setData('current_value', e.target.value)} />
+                    </div>
+                </div>
+            ) : (
                 <div className="space-y-2">
                     <Label htmlFor="current_value">Current Value</Label>
                     <Input id="current_value" type="number" min="0" step="0.01" value={form.data.current_value} onChange={(e) => form.setData('current_value', e.target.value)} />
                 </div>
-            </div>
+            )}
             <div className="space-y-2">
                 <Label htmlFor="notes">Notes</Label>
                 <Textarea id="notes" value={form.data.notes} onChange={(e) => form.setData('notes', e.target.value)} rows={2} />
