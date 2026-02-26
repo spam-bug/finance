@@ -27,8 +27,10 @@ export default defineConfig({
     build: {
         rollupOptions: {
             output: {
-                manualChunks: {
-                    echarts: ['echarts', 'echarts-for-react'],
+                manualChunks(id) {
+                    if (id.includes('echarts') || id.includes('zrender')) {
+                        return 'echarts';
+                    }
                 },
             },
         },
