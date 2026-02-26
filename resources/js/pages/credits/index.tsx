@@ -189,6 +189,13 @@ function CreditCard({ credit, accounts, onDelete }: { credit: Credit & { is_inde
     const progress = payments.length > 0 ? (paidCount / payments.length) * 100 : 0;
     const remaining = credit.is_indefinite ? null : Number(credit.total_amount) - paidAmount;
 
+    const nextGenerationHint = (() => {
+        if (!credit.is_indefinite) return null;
+        const unpaid = payments.filter((p) => !p.paid_at).sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+        if (unpaid.length === 0) return 'A new payment will be generated automatically.';
+        return `Next payment generates after ${formatDate(unpaid[0].due_date)} is paid.`;
+    })();
+
     return (
         <Card>
             <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
@@ -210,10 +217,13 @@ function CreditCard({ credit, accounts, onDelete }: { credit: Credit & { is_inde
             </CardHeader>
             <CardContent className="space-y-3">
                 {credit.is_indefinite ? (
-                    <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Total Paid</span>
-                        <span className="font-semibold">{formatCurrency(paidAmount)}</span>
-                    </div>
+                    <>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Total Paid</span>
+                            <span className="font-semibold">{formatCurrency(paidAmount)}</span>
+                        </div>
+                        {nextGenerationHint && <p className="text-muted-foreground text-xs">{nextGenerationHint}</p>}
+                    </>
                 ) : (
                     <>
                         <div className="flex justify-between text-sm">
