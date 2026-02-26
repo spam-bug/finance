@@ -13,7 +13,7 @@ export function PaymentRow({ payment, accounts }: { payment: CreditPayment; acco
 
     function handlePay(e: React.FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         setIsPaying(false);
         router.post(`/credit-payments/${payment.id}/pay`, { account_id: Number(form.data.account_id) });
     }

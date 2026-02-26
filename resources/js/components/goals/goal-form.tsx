@@ -23,7 +23,7 @@ export function GoalForm({ goal, accounts, onClose }: GoalFormProps) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         if (isEditing && goal) {
             form.transform((data) => ({
                 ...data,

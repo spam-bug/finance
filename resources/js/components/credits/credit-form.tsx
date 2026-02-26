@@ -42,7 +42,7 @@ export function CreditForm({ onClose }: { onClose: () => void }) {
             payload.number_of_payments = form.data.number_of_payments;
             payload.amount_per_payment = computedPerPayment ?? form.data.amount_per_payment;
         }
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         onClose();
         router.post('/credits', payload);
     }

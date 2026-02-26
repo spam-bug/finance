@@ -32,7 +32,7 @@ export default function CreditsIndex({ credits, accounts }: Props) {
 
     function confirmDelete() {
         if (!deleting) return;
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         router.delete(`/credits/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

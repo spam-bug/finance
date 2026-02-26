@@ -79,7 +79,7 @@ function TransactionForm({ transaction, accounts, categories, transactionType, d
             account_id: Number(form.data.account_id),
             category_id: form.data.category_id ? Number(form.data.category_id) : null,
         };
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         onClose();
         if (isEditing && transaction) {
             router.put(`/transactions/${transaction.id}`, payload);
@@ -176,7 +176,7 @@ export function TransactionList({ transactions, accounts, categories, type, titl
 
     function confirmDelete() {
         if (!deleting) return;
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         router.delete(`/transactions/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

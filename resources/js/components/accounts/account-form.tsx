@@ -21,7 +21,7 @@ export function AccountForm({ account, onClose }: AccountFormProps) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         if (isEditing && account) {
             form.put(`/accounts/${account.id}`, { onSuccess: () => onClose() });
         } else {

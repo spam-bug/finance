@@ -17,7 +17,7 @@ export function BudgetForm({ categories, month, year, onClose }: { categories: C
     const form = useForm({ category_id: '', amount: '', month: String(month), year: String(year) });
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         form.transform((data) => ({
             ...data,
             category_id: Number(data.category_id),

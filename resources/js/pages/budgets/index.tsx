@@ -43,7 +43,7 @@ export default function BudgetsIndex({ budgets, categories, month, year }: Props
 
     function confirmDelete() {
         if (!deleting) return;
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         router.delete(`/budgets/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

@@ -26,13 +26,13 @@ export default function ProfileEdit() {
 
     function handleProfileSubmit(e: FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.info('Processing request...');
         profileForm.put('/profile');
     }
 
     function handlePasswordSubmit(e: FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.info('Processing request...');
         passwordForm.put('/profile', {
             onSuccess: () => passwordForm.reset(),
         });

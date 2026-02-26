@@ -39,7 +39,7 @@ export default function InvestmentsIndex({ investments, accounts }: Props) {
 
     function confirmDelete() {
         if (!deleting) return;
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         router.delete(`/investments/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

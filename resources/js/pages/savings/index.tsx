@@ -36,7 +36,7 @@ export default function SavingsIndex({ savings_goals, accounts }: Props) {
 
     function confirmDelete() {
         if (!deleting) return;
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         router.delete(`/savings/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

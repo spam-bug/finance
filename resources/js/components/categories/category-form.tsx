@@ -21,7 +21,7 @@ export function CategoryForm({ category, categories, onClose }: CategoryFormProp
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         if (isEditing && category) {
             form.transform((data) => ({
                 ...data,

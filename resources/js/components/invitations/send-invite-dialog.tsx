@@ -17,7 +17,7 @@ export function SendInviteDialog() {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.info('Processing request...');
         post('/invitations', {
             onSuccess: () => {
                 setOpen(false);

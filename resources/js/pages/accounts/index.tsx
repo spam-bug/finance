@@ -36,7 +36,7 @@ export default function AccountsIndex({ accounts, categories }: Props) {
 
     function confirmDelete() {
         if (!deleting) return;
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         router.delete(`/accounts/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

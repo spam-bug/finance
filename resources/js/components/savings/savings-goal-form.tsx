@@ -29,7 +29,7 @@ export function SavingsGoalForm({ goal, accounts, onClose }: FormProps) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         if (isEditing && goal) {
             form.transform((data) => ({
                 ...data,

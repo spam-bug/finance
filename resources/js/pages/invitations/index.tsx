@@ -36,7 +36,7 @@ export default function InvitationsIndex({ invitations }: Props) {
 
     function confirmRevoke() {
         if (revoking === null) return;
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.info('Processing request...');
         router.delete(`/invitations/${revoking}`, { onFinish: () => setRevoking(null) });
     }
 

@@ -15,7 +15,7 @@ export function AddContributionDialog({ goal }: { goal: Goal }) {
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         const newAmount = Number(goal.current_amount) + Number(form.data.amount);
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         setOpen(false);
         form.reset();
         router.put(`/goals/${goal.id}`, {

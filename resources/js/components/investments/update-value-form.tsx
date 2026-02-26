@@ -11,7 +11,7 @@ export function UpdateValueForm({ investmentId, onClose }: UpdateFormProps) {
     const form = useForm({ value: '', date: new Date().toISOString().split('T')[0], notes: '' });
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         form.post(`/investments/${investmentId}/updates`, { onSuccess: () => onClose() });
     }
     return (

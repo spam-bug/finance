@@ -22,7 +22,7 @@ export function InvestmentForm({ investment, accounts, onClose }: InvestmentForm
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         if (isEditing && investment) {
             form.transform((data) => ({
                 ...data,

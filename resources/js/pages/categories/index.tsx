@@ -48,7 +48,7 @@ export default function CategoriesIndex({ categories }: Props) {
 
     function confirmDelete() {
         if (!deleting) return;
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         router.delete(`/categories/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

@@ -16,7 +16,7 @@ export function CreateUserForm({ onClose }: { onClose: () => void }) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        toast.loading('Processing...', { id: 'form-processing' });
+        toast.info('Processing request...');
         form.post('/users', { onSuccess: () => onClose() });
     }
 

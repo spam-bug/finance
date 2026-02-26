@@ -37,7 +37,7 @@ export default function GoalsIndex({ goals, accounts }: Props) {
 
     function confirmDelete() {
         if (!deleting) return;
-        toast.loading('Processing...');
+        toast.info('Processing request...');
         router.delete(`/goals/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 
