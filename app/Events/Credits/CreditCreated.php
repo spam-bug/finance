@@ -19,14 +19,16 @@ class CreditCreated implements ShouldBroadcast
         public Credit $credit,
     ) {}
 
-    /**
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
             new PrivateChannel('credits.'.$this->user->id),
         ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Credit has been created.'];
     }
 
     public function broadcastAs(): string

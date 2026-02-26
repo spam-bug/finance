@@ -18,14 +18,16 @@ class TransactionDeleted implements ShouldBroadcast
         public int $transactionId,
     ) {}
 
-    /**
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
             new PrivateChannel('transactions.'.$this->user->id),
         ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Transaction has been deleted.'];
     }
 
     public function broadcastAs(): string

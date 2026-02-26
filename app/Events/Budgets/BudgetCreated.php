@@ -19,14 +19,16 @@ class BudgetCreated implements ShouldBroadcast
         public Budget $budget,
     ) {}
 
-    /**
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
             new PrivateChannel('budgets.'.$this->user->id),
         ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Budget has been created.'];
     }
 
     public function broadcastAs(): string

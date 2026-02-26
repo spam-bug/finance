@@ -19,14 +19,16 @@ class CategoryUpdated implements ShouldBroadcast
         public Category $category,
     ) {}
 
-    /**
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
             new PrivateChannel('categories.'.$this->user->id),
         ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Category has been updated.'];
     }
 
     public function broadcastAs(): string

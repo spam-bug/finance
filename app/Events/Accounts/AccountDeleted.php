@@ -18,14 +18,16 @@ class AccountDeleted implements ShouldBroadcast
         public int $accountId,
     ) {}
 
-    /**
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
             new PrivateChannel('accounts.'.$this->user->id),
         ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Accounts has been deleted.'];
     }
 
     public function broadcastAs(): string

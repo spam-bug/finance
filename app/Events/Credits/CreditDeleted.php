@@ -18,14 +18,16 @@ class CreditDeleted implements ShouldBroadcast
         public int $creditId,
     ) {}
 
-    /**
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
             new PrivateChannel('credits.'.$this->user->id),
         ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Credit has been deleted.'];
     }
 
     public function broadcastAs(): string

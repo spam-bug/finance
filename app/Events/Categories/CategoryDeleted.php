@@ -18,14 +18,16 @@ class CategoryDeleted implements ShouldBroadcast
         public int $categoryId,
     ) {}
 
-    /**
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
             new PrivateChannel('categories.'.$this->user->id),
         ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Category has been deleted.'];
     }
 
     public function broadcastAs(): string

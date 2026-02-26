@@ -19,14 +19,16 @@ class TransactionCreated implements ShouldBroadcast
         public Transaction $transaction,
     ) {}
 
-    /**
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
             new PrivateChannel('transactions.'.$this->user->id),
         ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Transaction has been created.'];
     }
 
     public function broadcastAs(): string

@@ -19,14 +19,16 @@ class GoalUpdated implements ShouldBroadcast
         public Goal $goal,
     ) {}
 
-    /**
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
             new PrivateChannel('goals.'.$this->user->id),
         ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Goal has been updated.'];
     }
 
     public function broadcastAs(): string

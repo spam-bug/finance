@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
+import { ThemeSwitcher } from '@/components/theme-switcher';
 import { type User } from '@/types';
 import { Link, router } from '@inertiajs/react';
 import { ChevronsUpDown, LogOut, UserIcon } from 'lucide-react';
@@ -60,6 +61,10 @@ export function NavUser({ user }: { user: User }) {
                                     Profile
                                 </Link>
                             </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            <ThemeSwitcher />
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout}>

@@ -19,14 +19,16 @@ class AccountUpdated implements ShouldBroadcast
         public Account $account,
     ) {}
 
-    /**
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
             new PrivateChannel('accounts.'.$this->user->id),
         ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Accounts has been updated.'];
     }
 
     public function broadcastAs(): string

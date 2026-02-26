@@ -19,14 +19,16 @@ class SavingsGoalCreated implements ShouldBroadcast
         public SavingsGoal $savingsGoal,
     ) {}
 
-    /**
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
             new PrivateChannel('savings.'.$this->user->id),
         ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Savings goal has been created.'];
     }
 
     public function broadcastAs(): string

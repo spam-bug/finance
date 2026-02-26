@@ -18,14 +18,16 @@ class SavingsGoalDeleted implements ShouldBroadcast
         public int $savingsGoalId,
     ) {}
 
-    /**
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
             new PrivateChannel('savings.'.$this->user->id),
         ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Savings goal has been deleted.'];
     }
 
     public function broadcastAs(): string

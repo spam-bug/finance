@@ -18,14 +18,16 @@ class BudgetDeleted implements ShouldBroadcast
         public int $budgetId,
     ) {}
 
-    /**
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
             new PrivateChannel('budgets.'.$this->user->id),
         ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Budget has been deleted.'];
     }
 
     public function broadcastAs(): string

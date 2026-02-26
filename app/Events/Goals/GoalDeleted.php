@@ -18,14 +18,16 @@ class GoalDeleted implements ShouldBroadcast
         public int $goalId,
     ) {}
 
-    /**
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
             new PrivateChannel('goals.'.$this->user->id),
         ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['message' => 'Goal has been deleted.'];
     }
 
     public function broadcastAs(): string

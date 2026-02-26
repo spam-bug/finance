@@ -4,9 +4,8 @@ import { Separator } from '@/components/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { usePage } from '@inertiajs/react';
-import { type ReactNode, useEffect } from 'react';
-import { toast } from 'sonner';
+import { useTheme } from '@/hooks/use-theme';
+import { type ReactNode } from 'react';
 
 interface AppLayoutProps {
     children: ReactNode;
@@ -14,13 +13,7 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children, breadcrumb }: AppLayoutProps) {
-    const { flash } = usePage<{ flash: { success?: string; error?: string; warning?: string } }>().props;
-
-    useEffect(() => {
-        if (flash?.success) toast.success(flash.success, { id: 'form-processing' });
-        if (flash?.error) toast.error(flash.error, { id: 'form-processing' });
-        if (flash?.warning) toast.warning(flash.warning, { id: 'form-processing' });
-    }, [flash]);
+    useTheme();
 
     return (
         <TooltipProvider>
@@ -47,7 +40,7 @@ export default function AppLayout({ children, breadcrumb }: AppLayoutProps) {
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
                 </SidebarInset>
             </SidebarProvider>
-            <Toaster position="top-right" />
+            <Toaster position="top-center" />
         </TooltipProvider>
     );
 }
