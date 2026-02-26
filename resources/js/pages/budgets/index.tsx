@@ -1,9 +1,9 @@
+import { CategoryCombobox } from '@/components/category-combobox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEcho } from '@laravel/echo-react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import AppLayout from '@/layouts/app-layout';
@@ -35,13 +35,8 @@ function BudgetForm({ categories, month, year, onClose }: { categories: Category
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="category_id">Category</Label>
-                <Select value={form.data.category_id} onValueChange={(v) => form.setData('category_id', v)}>
-                    <SelectTrigger id="category_id"><SelectValue placeholder="Select category" /></SelectTrigger>
-                    <SelectContent>
-                        {categories.map((cat) => <SelectItem key={cat.id} value={String(cat.id)}>{getCategoryLabel(cat)}</SelectItem>)}
-                    </SelectContent>
-                </Select>
+                <Label>Category</Label>
+                <CategoryCombobox categories={categories} value={form.data.category_id} onChange={(v) => form.setData('category_id', v)} allowNone={false} />
                 {form.errors.category_id && <p className="text-destructive text-sm">{form.errors.category_id}</p>}
             </div>
             <div className="space-y-2">
