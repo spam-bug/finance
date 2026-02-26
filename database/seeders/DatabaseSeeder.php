@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Enums\AccountType;
 use App\Enums\CategoryType;
-use App\Models\Account;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -19,7 +17,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->seedCategories($user);
-        $this->seedAccounts($user);
     }
 
     private function seedCategories(User $user): void
@@ -64,25 +61,6 @@ class DatabaseSeeder extends Seeder
             'user_id' => $user->id,
             'name' => 'Other',
             'type' => CategoryType::Both,
-        ]);
-    }
-
-    private function seedAccounts(User $user): void
-    {
-        Account::query()->create([
-            'user_id' => $user->id,
-            'name' => 'Cash',
-            'type' => AccountType::Cash,
-            'initial_balance' => 5000.00,
-            'balance' => 5000.00,
-        ]);
-
-        Account::query()->create([
-            'user_id' => $user->id,
-            'name' => 'Main Bank',
-            'type' => AccountType::Bank,
-            'initial_balance' => 25000.00,
-            'balance' => 25000.00,
         ]);
     }
 }
