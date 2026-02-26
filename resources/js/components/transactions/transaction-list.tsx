@@ -13,6 +13,7 @@ import { type Account, type Category, type Transaction } from '@/types';
 import { router, useForm } from '@inertiajs/react';
 import { MoreHorizontal, PlusIcon, ReceiptIcon } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 type TransactionListProps = {
     transactions: Transaction[];
@@ -78,10 +79,12 @@ function TransactionForm({ transaction, accounts, categories, transactionType, d
             account_id: Number(form.data.account_id),
             category_id: form.data.category_id ? Number(form.data.category_id) : null,
         };
+        toast.loading('Processing...', { id: 'form-processing' });
+        onClose();
         if (isEditing && transaction) {
-            router.put(`/transactions/${transaction.id}`, payload, { onSuccess: onClose });
+            router.put(`/transactions/${transaction.id}`, payload);
         } else {
-            router.post('/transactions', payload, { onSuccess: onClose });
+            router.post('/transactions', payload);
         }
     }
 
@@ -173,6 +176,7 @@ export function TransactionList({ transactions, accounts, categories, type, titl
 
     function confirmDelete() {
         if (!deleting) return;
+        toast.loading('Processing...', { id: 'form-processing' });
         router.delete(`/transactions/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

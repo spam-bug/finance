@@ -29,6 +29,9 @@ function AddContributionDialog({ goal }: { goal: Goal }) {
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         const newAmount = Number(goal.current_amount) + Number(form.data.amount);
+        toast.loading('Processing...', { id: 'form-processing' });
+        setOpen(false);
+        form.reset();
         router.put(`/goals/${goal.id}`, {
             name: goal.name,
             target_amount: goal.target_amount,
@@ -36,8 +39,6 @@ function AddContributionDialog({ goal }: { goal: Goal }) {
             target_date: goal.target_date ?? '',
             account_id: goal.account_id,
             notes: goal.notes ?? '',
-        }, {
-            onSuccess: () => { setOpen(false); form.reset(); },
         });
     }
 
@@ -79,10 +80,12 @@ function GoalForm({ goal, accounts, onClose }: GoalFormProps) {
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         const payload = { ...form.data, account_id: form.data.account_id ? Number(form.data.account_id) : null };
+        toast.loading('Processing...', { id: 'form-processing' });
+        onClose();
         if (isEditing && goal) {
-            router.put(`/goals/${goal.id}`, payload, { onSuccess: onClose });
+            router.put(`/goals/${goal.id}`, payload);
         } else {
-            router.post('/goals', payload, { onSuccess: onClose });
+            router.post('/goals', payload);
         }
     }
 
@@ -139,9 +142,9 @@ export default function GoalsIndex({ goals, accounts }: Props) {
     const [deleting, setDeleting] = useState<Goal | null>(null);
 
     const reloadGoals = () => router.reload({ only: ['goals'] });
-    useEcho(`goals.${auth.user.id}`, '.goals.created', () => { reloadGoals(); toast.success('Goal created.'); });
-    useEcho(`goals.${auth.user.id}`, '.goals.updated', () => { reloadGoals(); toast.success('Goal updated.'); });
-    useEcho(`goals.${auth.user.id}`, '.goals.deleted', () => { reloadGoals(); toast.success('Goal removed.'); });
+    useEcho(`goals.${auth.user.id}`, '.goals.created', () => { reloadGoals(); toast.success('Goal created.', { id: 'form-processing' }); });
+    useEcho(`goals.${auth.user.id}`, '.goals.updated', () => { reloadGoals(); toast.success('Goal updated.', { id: 'form-processing' }); });
+    useEcho(`goals.${auth.user.id}`, '.goals.deleted', () => { reloadGoals(); toast.success('Goal removed.', { id: 'form-processing' }); });
 
     function handleDelete(goal: Goal) {
         setDeleting(goal);
@@ -149,6 +152,7 @@ export default function GoalsIndex({ goals, accounts }: Props) {
 
     function confirmDelete() {
         if (!deleting) return;
+        toast.loading('Processing...', { id: 'form-processing' });
         router.delete(`/goals/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

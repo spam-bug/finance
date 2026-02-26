@@ -11,6 +11,7 @@ import AppLayout from '@/layouts/app-layout';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { MailIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
+import { toast } from 'sonner';
 
 type Invitation = {
     id: number;
@@ -48,6 +49,7 @@ function SendInviteDialog() {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        toast.loading('Processing...', { id: 'form-processing' });
         post('/invitations', {
             onSuccess: () => {
                 setOpen(false);
@@ -117,6 +119,7 @@ export default function InvitationsIndex({ invitations }: Props) {
 
     function confirmRevoke() {
         if (revoking === null) return;
+        toast.loading('Processing...', { id: 'form-processing' });
         router.delete(`/invitations/${revoking}`, { onFinish: () => setRevoking(null) });
     }
 

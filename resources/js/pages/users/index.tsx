@@ -10,6 +10,7 @@ import AppLayout from '@/layouts/app-layout';
 import { router, useForm } from '@inertiajs/react';
 import { PlusIcon, UsersIcon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
+import { toast } from 'sonner';
 
 type AppUser = {
     id: number;
@@ -38,6 +39,7 @@ function CreateUserForm({ onClose }: { onClose: () => void }) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        toast.loading('Processing...', { id: 'form-processing' });
         router.post('/users', form.data, { onSuccess: onClose });
     }
 

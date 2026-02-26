@@ -16,9 +16,9 @@ export default function ExpensesIndex({ transactions, accounts, categories }: Pr
     const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
 
     const reload = () => router.reload({ only: ['transactions', 'accounts'] });
-    useEcho(`transactions.${auth.user.id}`, '.transactions.created', () => { reload(); toast.success('Expense added.'); });
-    useEcho(`transactions.${auth.user.id}`, '.transactions.updated', () => { reload(); toast.success('Expense updated.'); });
-    useEcho(`transactions.${auth.user.id}`, '.transactions.deleted', () => { reload(); toast.success('Expense removed.'); });
+    useEcho(`transactions.${auth.user.id}`, '.transactions.created', () => { reload(); toast.success('Expense added.', { id: 'form-processing' }); });
+    useEcho(`transactions.${auth.user.id}`, '.transactions.updated', () => { reload(); toast.success('Expense updated.', { id: 'form-processing' }); });
+    useEcho(`transactions.${auth.user.id}`, '.transactions.deleted', () => { reload(); toast.success('Expense removed.', { id: 'form-processing' }); });
     useEcho(`accounts.${auth.user.id}`, '.accounts.updated', reload);
 
     return (

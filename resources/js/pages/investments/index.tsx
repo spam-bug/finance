@@ -39,10 +39,12 @@ function InvestmentForm({ investment, accounts, onClose }: InvestmentFormProps) 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         const payload = { ...form.data, account_id: form.data.account_id ? Number(form.data.account_id) : null };
+        toast.loading('Processing...', { id: 'form-processing' });
+        onClose();
         if (isEditing && investment) {
-            router.put(`/investments/${investment.id}`, payload, { onSuccess: onClose });
+            router.put(`/investments/${investment.id}`, payload);
         } else {
-            router.post('/investments', payload, { onSuccess: onClose });
+            router.post('/investments', payload);
         }
     }
 
@@ -110,7 +112,9 @@ function UpdateValueForm({ investmentId, onClose }: UpdateFormProps) {
     const form = useForm({ value: '', date: new Date().toISOString().split('T')[0], notes: '' });
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        router.post(`/investments/${investmentId}/updates`, form.data, { onSuccess: onClose });
+        toast.loading('Processing...', { id: 'form-processing' });
+        onClose();
+        router.post(`/investments/${investmentId}/updates`, form.data);
     }
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -145,9 +149,9 @@ export default function InvestmentsIndex({ investments, accounts }: Props) {
     const [deleting, setDeleting] = useState<Investment | null>(null);
 
     const reloadInvestments = () => router.reload({ only: ['investments'] });
-    useEcho(`investments.${auth.user.id}`, '.investments.created', () => { reloadInvestments(); toast.success('Investment added.'); });
-    useEcho(`investments.${auth.user.id}`, '.investments.updated', () => { reloadInvestments(); toast.success('Investment updated.'); });
-    useEcho(`investments.${auth.user.id}`, '.investments.deleted', () => { reloadInvestments(); toast.success('Investment removed.'); });
+    useEcho(`investments.${auth.user.id}`, '.investments.created', () => { reloadInvestments(); toast.success('Investment added.', { id: 'form-processing' }); });
+    useEcho(`investments.${auth.user.id}`, '.investments.updated', () => { reloadInvestments(); toast.success('Investment updated.', { id: 'form-processing' }); });
+    useEcho(`investments.${auth.user.id}`, '.investments.deleted', () => { reloadInvestments(); toast.success('Investment removed.', { id: 'form-processing' }); });
 
     function handleDelete(inv: Investment) {
         setDeleting(inv);
@@ -155,6 +159,7 @@ export default function InvestmentsIndex({ investments, accounts }: Props) {
 
     function confirmDelete() {
         if (!deleting) return;
+        toast.loading('Processing...', { id: 'form-processing' });
         router.delete(`/investments/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

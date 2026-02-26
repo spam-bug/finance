@@ -7,6 +7,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type Auth } from '@/types';
 import { useForm, usePage } from '@inertiajs/react';
 import { type FormEvent, type ReactNode } from 'react';
+import { toast } from 'sonner';
 
 export default function ProfileEdit() {
     const { auth } = usePage<{ auth: Auth }>().props;
@@ -25,11 +26,13 @@ export default function ProfileEdit() {
 
     function handleProfileSubmit(e: FormEvent) {
         e.preventDefault();
+        toast.loading('Processing...', { id: 'form-processing' });
         profileForm.put('/profile');
     }
 
     function handlePasswordSubmit(e: FormEvent) {
         e.preventDefault();
+        toast.loading('Processing...', { id: 'form-processing' });
         passwordForm.put('/profile', {
             onSuccess: () => passwordForm.reset(),
         });

@@ -46,10 +46,12 @@ function CategoryForm({ category, categories, onClose }: CategoryFormProps) {
             parent_id: form.data.parent_id ? Number(form.data.parent_id) : null,
             color: form.data.color || null,
         };
+        toast.loading('Processing...', { id: 'form-processing' });
+        onClose();
         if (isEditing && category) {
-            router.put(`/categories/${category.id}`, payload, { onSuccess: onClose });
+            router.put(`/categories/${category.id}`, payload);
         } else {
-            router.post('/categories', payload, { onSuccess: onClose });
+            router.post('/categories', payload);
         }
     }
 
@@ -115,9 +117,9 @@ export default function CategoriesIndex({ categories }: Props) {
     const canEdit = auth.user.permission === 'edit';
 
     const reloadCategories = () => router.reload({ only: ['categories'] });
-    useEcho(`categories.${auth.user.id}`, '.categories.created', () => { reloadCategories(); toast.success('Category created.'); });
-    useEcho(`categories.${auth.user.id}`, '.categories.updated', () => { reloadCategories(); toast.success('Category updated.'); });
-    useEcho(`categories.${auth.user.id}`, '.categories.deleted', () => { reloadCategories(); toast.success('Category removed.'); });
+    useEcho(`categories.${auth.user.id}`, '.categories.created', () => { reloadCategories(); toast.success('Category created.', { id: 'form-processing' }); });
+    useEcho(`categories.${auth.user.id}`, '.categories.updated', () => { reloadCategories(); toast.success('Category updated.', { id: 'form-processing' }); });
+    useEcho(`categories.${auth.user.id}`, '.categories.deleted', () => { reloadCategories(); toast.success('Category removed.', { id: 'form-processing' }); });
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editing, setEditing] = useState<Category | null>(null);
     const [deleting, setDeleting] = useState<Category | null>(null);
@@ -130,6 +132,7 @@ export default function CategoriesIndex({ categories }: Props) {
 
     function confirmDelete() {
         if (!deleting) return;
+        toast.loading('Processing...', { id: 'form-processing' });
         router.delete(`/categories/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

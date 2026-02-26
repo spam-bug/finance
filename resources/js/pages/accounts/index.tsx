@@ -44,10 +44,12 @@ function AccountForm({ account, onClose }: AccountFormProps) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        toast.loading('Processing...', { id: 'form-processing' });
+        onClose();
         if (isEditing && account) {
-            form.put(`/accounts/${account.id}`, { onSuccess: onClose });
+            router.put(`/accounts/${account.id}`, form.data);
         } else {
-            form.post('/accounts', { onSuccess: onClose });
+            router.post('/accounts', form.data);
         }
     }
 
@@ -159,9 +161,9 @@ export default function AccountsIndex({ accounts, categories }: Props) {
     const [deleting, setDeleting] = useState<Account | null>(null);
 
     const reloadAccounts = () => router.reload({ only: ['accounts'] });
-    useEcho(`accounts.${auth.user.id}`, '.accounts.created', () => { reloadAccounts(); toast.success('Account added.'); });
-    useEcho(`accounts.${auth.user.id}`, '.accounts.updated', () => { reloadAccounts(); toast.success('Account updated.'); });
-    useEcho(`accounts.${auth.user.id}`, '.accounts.deleted', () => { reloadAccounts(); toast.success('Account removed.'); });
+    useEcho(`accounts.${auth.user.id}`, '.accounts.created', () => { reloadAccounts(); toast.success('Account added.', { id: 'form-processing' }); });
+    useEcho(`accounts.${auth.user.id}`, '.accounts.updated', () => { reloadAccounts(); toast.success('Account updated.', { id: 'form-processing' }); });
+    useEcho(`accounts.${auth.user.id}`, '.accounts.deleted', () => { reloadAccounts(); toast.success('Account removed.', { id: 'form-processing' }); });
 
     function handleDelete(account: Account) {
         setDeleting(account);
@@ -169,6 +171,7 @@ export default function AccountsIndex({ accounts, categories }: Props) {
 
     function confirmDelete() {
         if (!deleting) return;
+        toast.loading('Processing...', { id: 'form-processing' });
         router.delete(`/accounts/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 

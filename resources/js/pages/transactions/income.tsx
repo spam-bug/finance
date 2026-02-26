@@ -16,9 +16,9 @@ export default function IncomeIndex({ transactions, accounts, categories }: Prop
     const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
 
     const reload = () => router.reload({ only: ['transactions', 'accounts'] });
-    useEcho(`transactions.${auth.user.id}`, '.transactions.created', () => { reload(); toast.success('Income added.'); });
-    useEcho(`transactions.${auth.user.id}`, '.transactions.updated', () => { reload(); toast.success('Income updated.'); });
-    useEcho(`transactions.${auth.user.id}`, '.transactions.deleted', () => { reload(); toast.success('Income removed.'); });
+    useEcho(`transactions.${auth.user.id}`, '.transactions.created', () => { reload(); toast.success('Income added.', { id: 'form-processing' }); });
+    useEcho(`transactions.${auth.user.id}`, '.transactions.updated', () => { reload(); toast.success('Income updated.', { id: 'form-processing' }); });
+    useEcho(`transactions.${auth.user.id}`, '.transactions.deleted', () => { reload(); toast.success('Income removed.', { id: 'form-processing' }); });
     useEcho(`accounts.${auth.user.id}`, '.accounts.updated', reload);
 
     return (
