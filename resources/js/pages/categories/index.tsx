@@ -117,6 +117,8 @@ export default function CategoriesIndex({ categories }: Props) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editing, setEditing] = useState<Category | null>(null);
     const [deleting, setDeleting] = useState<Category | null>(null);
+    const [search, setSearch] = useState('');
+    const [typeFilter, setTypeFilter] = useState<string>('all');
 
     function handleDelete(category: Category) {
         setDeleting(category);
@@ -127,8 +129,14 @@ export default function CategoriesIndex({ categories }: Props) {
         router.delete(`/categories/${deleting.id}`, { onFinish: () => setDeleting(null) });
     }
 
-    const topLevel = categories.filter((c) => !c.parent_id);
-    const children = categories.filter((c) => c.parent_id);
+    const filtered = categories.filter((c) => {
+        const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase()) || (c.parent?.name ?? '').toLowerCase().includes(search.toLowerCase());
+        const matchesType = typeFilter === 'all' || c.type === typeFilter;
+        return matchesSearch && matchesType;
+    });
+
+    const topLevel = filtered.filter((c) => !c.parent_id);
+    const children = filtered.filter((c) => c.parent_id);
 
     return (
         <div className="space-y-6">
@@ -151,8 +159,27 @@ export default function CategoriesIndex({ categories }: Props) {
             </div>
 
             <Card>
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-base">All Categories</CardTitle>
+                <CardHeader className="pb-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <CardTitle className="text-base">All Categories</CardTitle>
+                        <div className="flex gap-2">
+                            <Input
+                                placeholder="Search categories…"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="h-8 w-48"
+                            />
+                            <Select value={typeFilter} onValueChange={setTypeFilter}>
+                                <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All types</SelectItem>
+                                    <SelectItem value="income">Income</SelectItem>
+                                    <SelectItem value="expense">Expense</SelectItem>
+                                    <SelectItem value="both">Both</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     {categories.length === 0 ? (
@@ -160,6 +187,8 @@ export default function CategoriesIndex({ categories }: Props) {
                             <TagIcon className="text-muted-foreground h-10 w-10" />
                             <p className="text-muted-foreground text-sm">No categories yet.</p>
                         </div>
+                    ) : filtered.length === 0 ? (
+                        <p className="text-muted-foreground py-8 text-center text-sm">No categories match your search.</p>
                     ) : (
                         <Table>
                             <TableHeader>
