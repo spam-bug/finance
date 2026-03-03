@@ -23,14 +23,18 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'permission' => Permission::Edit,
-        ]);
+        $user = User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'password' => 'password',
+                'permission' => Permission::Edit,
+            ]
+        );
 
-        $this->seedCategories();
+        if (Category::query()->doesntExist()) {
+            $this->seedCategories();
+        }
 
         $categories = Category::query()->get()->keyBy('name');
 
