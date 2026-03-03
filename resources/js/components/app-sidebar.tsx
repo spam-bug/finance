@@ -3,10 +3,10 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from '@/components/ui/sidebar';
 import { type Auth } from '@/types';
 import { usePage } from '@inertiajs/react';
-import { Landmark, LayoutDashboard, MailIcon, PiggyBank, Receipt, Tag, Target, TrendingUp, UserCogIcon, Wallet } from 'lucide-react';
+import { Landmark, LayoutDashboard, PiggyBank, Receipt, Target, Wallet } from 'lucide-react';
 import * as React from 'react';
 
-const baseNavItems = [
+const navItems = [
     {
         title: 'Dashboard',
         url: '/',
@@ -37,11 +37,6 @@ const baseNavItems = [
         icon: PiggyBank,
     },
     {
-        title: 'Investments',
-        url: '/investments',
-        icon: TrendingUp,
-    },
-    {
         title: 'Budgets',
         url: '/budgets',
         icon: Target,
@@ -50,22 +45,10 @@ const baseNavItems = [
             { title: 'Goals', url: '/goals' },
         ],
     },
-    {
-        title: 'Categories',
-        url: '/categories',
-        icon: Tag,
-    },
-];
-
-const editOnlyNavItems = [
-    { title: 'Invitations', url: '/invitations', icon: MailIcon },
-    { title: 'Users', url: '/users', icon: UserCogIcon },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const { auth } = usePage<{ auth: Auth & { user: { permission?: string } } }>().props;
-    const canEdit = auth.user.permission === 'edit';
-    const navItems = canEdit ? [...baseNavItems, ...editOnlyNavItems] : baseNavItems;
+    const { auth } = usePage<{ auth: Auth }>().props;
 
     return (
         <Sidebar collapsible="icon" {...props}>

@@ -12,8 +12,8 @@ interface LoginProps {
 
 export default function Login({ status }: LoginProps) {
     const { data, setData, post, processing, errors } = useForm({
-        email: '',
-        password: '',
+        email: 'test@example.com',
+        password: 'password',
         remember: false as boolean,
     });
 
@@ -87,6 +87,13 @@ export default function Login({ status }: LoginProps) {
                         </form>
                     </CardContent>
                 </Card>
+
+                <p className="text-muted-foreground text-center text-sm">
+                    Don't have an account?{' '}
+                    <Link href="/register" className="underline-offset-4 hover:underline">
+                        Sign up
+                    </Link>
+                </p>
             </div>
         </div>
     );
